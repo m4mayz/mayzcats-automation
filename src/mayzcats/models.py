@@ -93,7 +93,6 @@ class ResearchBrief:
     claims: list[str]
     sources: list[SourceTrace]
     medical: bool = False
-    vet_disclaimer: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return _json_safe(asdict(self))
@@ -105,7 +104,6 @@ class ResearchBrief:
             claims=[str(item) for item in data.get("claims", [])],
             sources=[SourceTrace.from_dict(item) for item in data.get("sources", [])],
             medical=bool(data.get("medical", False)),
-            vet_disclaimer=data.get("vet_disclaimer"),
         )
 
 

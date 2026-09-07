@@ -40,14 +40,11 @@ def test_extract_json_accepts_fenced_response_and_rejects_trailing_garbage() -> 
         extract_json_object("answer: none")
 
 
-def test_duplicate_requires_similar_subject_and_similar_angle() -> None:
+def test_duplicate_rejects_similar_subject_even_with_a_different_angle() -> None:
     vectors = {
         "cats kneading blankets": [1.0, 0.0],
-        "why they do it": [0.0, 1.0],
         "cats making biscuits on blankets": [0.99, 0.01],
-        "the emotional reason behind kneading": [0.02, 0.98],
         "cats kneading their owners": [0.98, 0.02],
-        "how owners should respond": [0.8, 0.6],
     }
     history = [
         HistoryEntry(
@@ -57,7 +54,7 @@ def test_duplicate_requires_similar_subject_and_similar_angle() -> None:
             "vid1",
         )
     ]
-    detector = DuplicateDetector(FakeEmbedder(vectors), 0.90, 0.90)
+    detector = DuplicateDetector(FakeEmbedder(vectors), 0.90)
 
     wording_variant = Candidate(
         "cats making biscuits on blankets",
@@ -69,7 +66,7 @@ def test_duplicate_requires_similar_subject_and_similar_angle() -> None:
     )
 
     assert detector.find_duplicate(wording_variant, history) is history[0]
-    assert detector.find_duplicate(different_angle, history) is None
+    assert detector.find_duplicate(different_angle, history) is history[0]
 
 
 def test_candidate_generator_caps_results_and_keeps_valid_mix() -> None:
@@ -140,7 +137,7 @@ def test_fact_validation_requires_two_valid_source_numbers() -> None:
         validate_source_numbers([1, 4], source_count=3)
 
 
-def test_medical_script_automatically_appends_the_required_vet_disclaimer() -> None:
+def test_medical_script_does_not_request_or_append_a_vet_disclaimer() -> None:
     response = {
         "script": "A general health explanation without the required warning.",
         "title": "A Cat Health Sign",
@@ -159,19 +156,16 @@ def test_medical_script_automatically_appends_the_required_vet_disclaimer() -> N
         claims=["A supported claim"],
         sources=[SourceTrace("Vet", "https://vet.example", "fact", 1.0, "now")],
         medical=True,
-        vet_disclaimer="Ask a veterinarian about changes in your cat's health.",
     )
     writer = ScriptWriter(FakeLLM(response))
 
     package = writer.write(Candidate("Cat sign", "what it can indicate", "evergreen"), brief)
 
-    assert package.script == (
-        "A general health explanation without the required warning. "
-        "Ask a veterinarian about changes in your cat's health."
-    )
+    assert package.script == "A general health explanation without the required warning."
+    assert all("disclaimer" not in prompt.lower() for call in writer.llm.calls for prompt in call)
 
 
-def test_duration_revision_restores_a_required_disclaimer_dropped_by_the_llm() -> None:
+def test_duration_revision_does_not_request_a_disclaimer() -> None:
     response = {
         "script": "A shorter general health explanation.",
         "title": "A Cat Health Sign",
@@ -203,7 +197,7 @@ def test_duration_revision_restores_a_required_disclaimer_dropped_by_the_llm() -
     revised = writer.revise_for_duration(
         original,
         60.0,
-        required_disclaimer="Ask a veterinarian about changes in your cat's health.",
     )
 
-    assert revised.script.endswith("Ask a veterinarian about changes in your cat's health.")
+    assert revised.script == "A shorter general health explanation."
+    assert all("disclaimer" not in prompt.lower() for call in writer.llm.calls for prompt in call)

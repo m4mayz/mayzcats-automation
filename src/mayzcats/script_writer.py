@@ -23,7 +23,6 @@ class ScriptWriter:
 
     def write(self, candidate: Candidate, brief: ResearchBrief) -> ScriptPackage:
         evidence = "\n".join(f"- {claim}" for claim in brief.claims)
-        disclaimer = brief.vet_disclaimer or "Not applicable"
         response = self.llm.json(
             """Write factual English narration for MayzCats. Structure: hook,
 context, main explanation, surprising detail, closing question. Target about 45
@@ -31,14 +30,13 @@ seconds. Keep it family-friendly, warm, curious, slightly playful, and free of
 cheap clickbait. Playful personification must read as humor rather than fact.
 Use only supplied claims. Return JSON only.""",
             f"""Subject: {candidate.subject}\nAngle: {candidate.angle}\nSupported claims:\n{evidence}
-Medical: {brief.medical}\nRequired disclaimer: {disclaimer}\nReturn keys script,
+Medical: {brief.medical}\nReturn keys script,
 title, description, hashtags, tags, hook_text, hook_keyword, search_terms, beats,
 mood, medical. Description is 1-2 sentences and must not expose internal source
 traces. Hashtags include #shorts plus 2-4 relevant tags. Beats are ordered visual
 segments. hook_keyword must occur exactly in hook_text.""",
         )
-        package = package_from_response(response, medical=brief.medical)
-        return ensure_vet_disclaimer(package, brief.vet_disclaimer)
+        return package_from_response(response, medical=brief.medical)
 
     def revise_for_duration(
         self,
@@ -47,27 +45,16 @@ segments. hook_keyword must occur exactly in hook_text.""",
         *,
         minimum: float = 35.0,
         maximum: float = 55.0,
-        required_disclaimer: str | None = None,
     ) -> ScriptPackage:
         direction = "expand" if actual_duration < minimum else "shorten"
         response = self.llm.json(
             "Revise narration length without adding any new factual claim. Return JSON only.",
             f"""The narration measured {actual_duration:.2f} seconds. {direction.title()} it so
 the same voice should land between {minimum:.0f} and {maximum:.0f} seconds. Preserve the
-meaning, grounded facts, tone, metadata, hook, closing question, and medical
-disclaimer. Existing package:\n{package.to_dict()}""",
+meaning, grounded facts, tone, metadata, hook, and closing question. Existing
+package:\n{package.to_dict()}""",
         )
-        revised = package_from_response(response, medical=package.medical)
-        return ensure_vet_disclaimer(revised, required_disclaimer)
-
-
-def ensure_vet_disclaimer(
-    package: ScriptPackage, required_disclaimer: str | None
-) -> ScriptPackage:
-    disclaimer = str(required_disclaimer or "").strip()
-    if package.medical and disclaimer and disclaimer.casefold() not in package.script.casefold():
-        package.script = f"{package.script.rstrip()} {disclaimer}"
-    return package
+        return package_from_response(response, medical=package.medical)
 
 
 def package_from_response(data: dict[str, Any], *, medical: bool) -> ScriptPackage:

@@ -40,28 +40,20 @@ class DuplicateDetector:
         self,
         embedder: Embedder,
         subject_threshold: float = 0.90,
-        angle_threshold: float = 0.90,
     ) -> None:
         self.embedder = embedder
         self.subject_threshold = subject_threshold
-        self.angle_threshold = angle_threshold
 
     def find_duplicate(
         self, candidate: Candidate, history: list[HistoryEntry]
     ) -> HistoryEntry | None:
         if not history:
             return None
-        texts = [candidate.subject, candidate.angle]
-        for entry in history:
-            texts.extend([entry.subject, entry.angle])
+        texts = [candidate.subject, *(entry.subject for entry in history)]
         vectors = self.embedder.encode(texts)
-        candidate_subject, candidate_angle = vectors[:2]
+        candidate_subject = vectors[0]
         for index, entry in enumerate(history):
-            subject_vector = vectors[2 + index * 2]
-            angle_vector = vectors[3 + index * 2]
-            if (
-                cosine_similarity(candidate_subject, subject_vector) >= self.subject_threshold
-                and cosine_similarity(candidate_angle, angle_vector) >= self.angle_threshold
-            ):
+            subject_vector = vectors[index + 1]
+            if cosine_similarity(candidate_subject, subject_vector) >= self.subject_threshold:
                 return entry
         return None

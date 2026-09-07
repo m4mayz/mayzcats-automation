@@ -4,7 +4,6 @@ topic:
     trending_percent: 20
     history_days: 90
     subject_similarity_threshold: 0.90
-    angle_similarity_threshold: 0.90
     embedding_model: sentence-transformers/all-MiniLM-L6-v2
 
 network:

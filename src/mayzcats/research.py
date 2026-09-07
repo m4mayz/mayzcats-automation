@@ -180,29 +180,23 @@ class Researcher:
         response = self.llm.json(
             """You are a careful cat-content fact checker. Use only the supplied
 source excerpts. Reject unsupported claims. Medical content may explain general
-signs but may not diagnose or prescribe; it must include a concise veterinarian
-disclaimer. Return JSON only.""",
+signs but may not diagnose or prescribe. Return JSON only.""",
             f"""Topic: {candidate.subject}\nAngle: {candidate.angle}\n\n{evidence}\n\n
 Return {{"summary":"...","claims":["..."],"source_numbers":[1,2],
-"medical":false,"vet_disclaimer":null}}. Every claim must be supported by at
-least one numbered source and the brief must use at least two distinct sources.
-Keep source traces internal.""",
+"medical":false}}. Every claim must be supported by at least one numbered source
+and the brief must use at least two distinct sources. Keep source traces internal.""",
         )
         claims = [str(item).strip() for item in response.get("claims", []) if str(item).strip()]
         summary = str(response.get("summary", "")).strip()
         medical = bool(response.get("medical", False))
-        disclaimer = response.get("vet_disclaimer")
         if not claims or not summary:
             raise InsufficientResearchError("Fact checker returned no supported claims")
         validate_source_numbers(
             list(response.get("source_numbers") or []), source_count=len(sources)
         )
-        if medical and not str(disclaimer or "").strip():
-            raise InsufficientResearchError("Medical research requires a veterinarian disclaimer")
         return ResearchBrief(
             summary=summary,
             claims=claims,
             sources=sources,
             medical=medical,
-            vet_disclaimer=str(disclaimer).strip() if disclaimer else None,
         )

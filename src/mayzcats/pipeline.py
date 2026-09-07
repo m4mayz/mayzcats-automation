@@ -177,7 +177,6 @@ class MayzCatsPipeline:
                 )
             ),
             float(settings.value("topic.subject_similarity_threshold", 0.90)),
-            float(settings.value("topic.angle_similarity_threshold", 0.90)),
         )
         self.script_writer = ScriptWriter(llm)
         self.tts = ElevenLabsClient(
@@ -406,7 +405,6 @@ class MayzCatsPipeline:
                         narration.duration,
                         minimum=minimum,
                         maximum=maximum,
-                        required_disclaimer=brief.vet_disclaimer,
                     )
                     checkpoint.save_json("script.json", script_package.to_dict())
                 checkpoint.save_json("narration.json", narration.to_dict())
