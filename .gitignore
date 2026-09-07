@@ -1,0 +1,31 @@
+.env
+.venv/
+.uv-cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+artifacts/
+
+.pytest-tmp/
+.worktrees/
+
+# Private and runtime-owned data
+config/channel.yaml
+config/pipeline.yaml
+secrets/
+state/
+cache/
+failed/
+logs/
+runs/
+
+# Generated media
+*.mp3
+*.wav
+*.mp4
+*.mov
+*.webm
