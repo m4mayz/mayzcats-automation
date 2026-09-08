@@ -37,6 +37,7 @@ media:
 music:
     volume: 0.08
     provider: moneyprinterturbo_builtin
+    excluded_files: []
 
 video:
     width: 1080
@@ -45,8 +46,6 @@ video:
     font: Montserrat
     font_bold: true
     watermark: MayzCats
-    mpt_repo: https://github.com/harry0703/MoneyPrinterTurbo.git
-    mpt_ref: main
 
 youtube:
     privacy: private

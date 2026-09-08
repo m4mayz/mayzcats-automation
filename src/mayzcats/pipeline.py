@@ -27,7 +27,7 @@ from .models import (
     ResearchBrief,
     ScriptPackage,
 )
-from .music_fetcher import MPTMusicLibrary
+from .music_fetcher import REPO_MUSIC_DIR, MPTMusicLibrary
 from .research import Researcher, TavilyClient
 from .scene_planner import plan_scenes
 from .script_writer import ScriptWriter
@@ -194,7 +194,10 @@ class MayzCatsPipeline:
             ],
             max_download_bytes=int(settings.value("media.max_download_bytes", 150_000_000)),
         )
-        self.music = MPTMusicLibrary(settings.mpt_root)
+        self.music = MPTMusicLibrary(
+            REPO_MUSIC_DIR,
+            excluded_files={str(name) for name in settings.value("music.excluded_files", [])},
+        )
         self.video = VideoEngine(MPTAdapter(settings.mpt_root))
         self.uploader = YoutubeUploader(
             settings.layout.client_secret,
@@ -624,7 +627,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=Path("/content/drive/MyDrive/MayzCats-Automation"),
     )
     parser.add_argument(
-        "--mpt-root", type=Path, default=Path("/content/mayzcats/MoneyPrinterTurbo")
+        "--mpt-root",
+        type=Path,
+        default=Path("/content/mayzcats-project/vendor/MoneyPrinterTurbo"),
     )
     parser.add_argument("--work-root", type=Path, default=Path("/content/mayzcats/runs"))
     mode = parser.add_mutually_exclusive_group()

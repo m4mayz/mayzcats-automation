@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import REQUIRED_SECRETS, Settings
+from .music_fetcher import REPO_MUSIC_DIR
 from .storage import DriveLayout
 
 
@@ -26,10 +27,7 @@ def check_environment(
         "ffprobe": shutil.which("ffprobe") is not None,
         "uv": shutil.which("uv") is not None,
         "mpt_cli": (mpt_root / "cli.py").is_file(),
-        "mpt_music": any(
-            path.is_file()
-            for path in (mpt_root / "resource" / "songs").glob("*.mp3")
-        ),
+        "mpt_music": any(path.is_file() for path in REPO_MUSIC_DIR.glob("*.mp3")),
         "youtube_client_secret": layout.client_secret.is_file(),
     }
     missing_secrets = [
@@ -69,7 +67,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=Path("/content/drive/MyDrive/MayzCats-Automation"),
     )
     parser.add_argument(
-        "--mpt-root", type=Path, default=Path("/content/mayzcats/MoneyPrinterTurbo")
+        "--mpt-root",
+        type=Path,
+        default=Path("/content/mayzcats-project/vendor/MoneyPrinterTurbo"),
     )
     return parser.parse_args(argv)
 

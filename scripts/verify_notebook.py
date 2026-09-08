@@ -22,7 +22,7 @@ def main() -> int:
     required = (
         "drive.mount",
         "/content/drive/MyDrive/MayzCats-Automation",
-        "harry0703/MoneyPrinterTurbo.git",
+        "RUNTIME_PROJECT / 'vendor' / 'MoneyPrinterTurbo'",
         "uv sync --frozen",
         "mayzcats.preflight",
         "mayzcats.pipeline",

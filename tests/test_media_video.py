@@ -106,13 +106,12 @@ def test_scene_planner_is_adaptive_and_covers_narration_exactly() -> None:
 
 
 def test_mpt_music_library_copies_a_bundled_track_with_source_trace(tmp_path: Path) -> None:
-    mpt_root = tmp_path / "MoneyPrinterTurbo"
-    songs = mpt_root / "resource" / "songs"
+    songs = tmp_path / "music"
     songs.mkdir(parents=True)
     (songs / "output000.mp3").write_bytes(b"first")
     (songs / "output001.mp3").write_bytes(b"second")
 
-    track = MPTMusicLibrary(mpt_root, validator=lambda _: True).prepare(
+    track = MPTMusicLibrary(songs, validator=lambda _: True).prepare(
         "run-123", tmp_path / "checkpoint-music"
     )
 
@@ -125,12 +124,34 @@ def test_mpt_music_library_copies_a_bundled_track_with_source_trace(tmp_path: Pa
     assert len(track.sha256) == 64
 
 
-def test_mpt_music_library_fails_before_tts_when_checkout_has_no_songs(tmp_path: Path) -> None:
-    mpt_root = tmp_path / "MoneyPrinterTurbo"
-    (mpt_root / "resource" / "songs").mkdir(parents=True)
+def test_mpt_music_library_skips_excluded_tracks(tmp_path: Path) -> None:
+    songs = tmp_path / "music"
+    songs.mkdir()
+    (songs / "output000.mp3").write_bytes(b"excluded")
+    (songs / "output001.mp3").write_bytes(b"allowed")
 
-    with pytest.raises(RuntimeError, match="resource/songs"):
-        MPTMusicLibrary(mpt_root).prepare("run-123", tmp_path / "checkpoint-music")
+    track = MPTMusicLibrary(
+        songs,
+        excluded_files={"output000.mp3"},
+        validator=lambda _: True,
+    ).prepare("run-123", tmp_path / "checkpoint-music")
+
+    assert track.title == "output001.mp3"
+    assert track.local_path is not None
+    assert track.local_path.read_bytes() == b"allowed"
+
+
+def test_mpt_music_library_fails_before_tts_when_repo_has_no_selectable_songs(
+    tmp_path: Path,
+) -> None:
+    songs = tmp_path / "music"
+    songs.mkdir()
+    (songs / "output000.mp3").write_bytes(b"excluded")
+
+    with pytest.raises(RuntimeError, match="selectable bundled music"):
+        MPTMusicLibrary(songs, excluded_files={"output000.mp3"}).prepare(
+            "run-123", tmp_path / "checkpoint-music"
+        )
 
 
 def test_mpt_command_uses_local_prepared_assets_and_disables_mpt_overlays(tmp_path: Path) -> None:

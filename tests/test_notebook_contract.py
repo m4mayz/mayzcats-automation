@@ -28,7 +28,8 @@ def test_colab_notebook_is_run_all_ready_and_contains_no_credentials() -> None:
     assert "https://github.com/m4mayz/mayzcats-automation.git" in code
     assert "PROJECT_SOURCE" not in code
     assert "DRIVE_ROOT / 'project'" not in code
-    assert "harry0703/MoneyPrinterTurbo.git" in code
+    assert "harry0703/MoneyPrinterTurbo.git" not in code
+    assert "RUNTIME_PROJECT / 'vendor' / 'MoneyPrinterTurbo'" in code
     assert "uv sync --frozen" in code
     assert "mayzcats.pipeline" in code
     assert "load_credentials" in code
@@ -37,3 +38,7 @@ def test_colab_notebook_is_run_all_ready_and_contains_no_credentials() -> None:
     assert "privacyStatus" not in code or '"private"' in code
     assert "sk-" not in code
     assert "ELEVENLABS_API_KEYS=" not in code
+
+    assert (ROOT / "vendor" / "MoneyPrinterTurbo" / "cli.py").is_file()
+    assert (ROOT / "vendor" / "MoneyPrinterTurbo" / "LICENSE").is_file()
+    assert len(list((ROOT / "src" / "music").glob("*.mp3"))) == 29

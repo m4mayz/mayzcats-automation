@@ -36,7 +36,7 @@ class Settings:
         layout: DriveLayout,
         *,
         work_root: Path = Path("/content/mayzcats/runs"),
-        mpt_root: Path = Path("/content/mayzcats/MoneyPrinterTurbo"),
+        mpt_root: Path = Path("/content/mayzcats-project/vendor/MoneyPrinterTurbo"),
     ) -> Settings:
         channel = _read_yaml(layout.channel_config)
         pipeline = _read_yaml(layout.pipeline_config)

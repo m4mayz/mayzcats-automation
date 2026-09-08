@@ -1,9 +1,9 @@
 # MayzCats V1
 
-MayzCats V1 is a Google Colab-ready wrapper around an untouched
-[MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) checkout. It
-researches one factual cat topic, rejects recent semantic subject-and-angle
-duplicates, renders a 1080x1920 Short with Jessica narration and MayzCats
+MayzCats V1 is a Google Colab-ready automation pipeline with a vendored
+[MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) runtime snapshot. It
+researches one factual cat topic, rejects recent semantic subject duplicates,
+renders a 1080x1920 Short with Jessica narration and MayzCats
 overlays, then uploads it to YouTube using the configured **Private** or
 **Public** privacy status. The default remains `private`.
 
@@ -13,9 +13,8 @@ overlays, then uploads it to YouTube using the configured **Private** or
   `MyDrive/MayzCats-Automation`.
 - Custom OpenAI-compatible `/chat/completions` client.
 - Tavily trend discovery, research, fact-grounded brief generation, and retained
-  internal source trace. Medical scripts deterministically retain the research
-  disclaimer even when the LLM omits it during drafting or duration revision.
-- 90-day semantic duplicate detection across both subject and substantive angle
+  internal source trace.
+- 90-day semantic duplicate detection across the subject
   with `sentence-transformers/all-MiniLM-L6-v2`.
 - ElevenLabs Jessica (`cgSgspJ2msm6clMCkdW9`), multilingual v2, speed 1.08,
   character timing, sequential key fallback for explicit provider rejection,
@@ -23,8 +22,8 @@ overlays, then uploads it to YouTube using the configured **Private** or
   narration after later-stage failures.
 - Pexels and Pixabay real-video-first sourcing with image fallback and creator,
   page, and license trace.
-- Music selected from the checked-out MoneyPrinterTurbo `resource/songs`
-  library, validated and copied to the Drive checkpoint before paid TTS starts.
+- Music selected from the 29 MoneyPrinterTurbo tracks vendored under
+  `src/music`, validated and copied to the Drive checkpoint before paid TTS starts.
   Metadata records the exact filename, SHA-256, and MPT source. MPT documents
   these bundled tracks as originating from YouTube and does not provide a
   verified per-track license; MayzCats records that status without blocking the
@@ -32,7 +31,7 @@ overlays, then uploads it to YouTube using the configured **Private** or
 - Adaptive scene durations, a 1-2 second opening visual, still-image-only subtle
   pan/zoom, stable ASS karaoke phrases with two-line portrait-safe wrapping,
   Montserrat Bold, top-right MayzCats watermark, and 0.08 music mix.
-- External MPT CLI composition followed by a MayzCats FFmpeg pass normalized to
+- Vendored MPT CLI composition followed by a MayzCats FFmpeg pass normalized to
   H.264/AAC, 1080x1920, 30 fps.
 - YouTube Data API OAuth, resumable upload, category 15, made-for-kids false,
   and configurable `private` or `public` status.
@@ -97,6 +96,17 @@ overlays, then uploads it to YouTube using the configured **Private** or
     Supported values are `private` and `public`. Category, made-for-kids,
     voice ID, size, and frame-rate rules remain fixed for V1.
 
+If YouTube later flags a bundled track, add its filename to the persistent
+config/pipeline.yaml in Drive so future runs skip it:
+
+~~~yaml
+music:
+  volume: 0.08
+  provider: moneyprinterturbo_builtin
+  excluded_files:
+    - output000.mp3
+~~~
+
 ## Run
 
 Choose **Runtime → Run all**. The notebook:
@@ -105,8 +115,8 @@ Choose **Runtime → Run all**. The notebook:
 2. installs FFmpeg when missing, obtains Montserrat directly from the official
    Google Fonts repository, installs wrapper dependencies, and creates an
    isolated Python 3.11 MPT environment;
-3. clones or refreshes MPT under `/content/mayzcats/MoneyPrinterTurbo` without
-   modifying its source;
+3. installs the MPT snapshot already bundled under
+   `/content/mayzcats-project/vendor/MoneyPrinterTurbo`;
 4. completes or refreshes YouTube OAuth in the notebook kernel before paid API
    stages;
 5. runs preflight; and
@@ -234,7 +244,7 @@ quota:
 ```text
 python -m mayzcats.preflight \
   --drive-root /content/drive/MyDrive/MayzCats-Automation \
-  --mpt-root /content/mayzcats/MoneyPrinterTurbo
+  --mpt-root /content/mayzcats-project/vendor/MoneyPrinterTurbo
 ```
 
 A true end-to-end verification requires the user's live keys, paid TTS quota,
