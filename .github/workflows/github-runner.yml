@@ -77,7 +77,10 @@ jobs:
       - name: Install video dependencies
         if: steps.gate.outputs.due == 'true'
         run: |
-          sudo apt-get update
+          # Third-party runner repos (Chrome) intermittently serve mismatched
+          # hashes; only the Ubuntu archive matters here, and the install below
+          # is the real gate.
+          sudo apt-get update || true
           sudo apt-get install -y ffmpeg fontconfig
           .venv/bin/python -c "from pathlib import Path; from mayzcats.colab_bootstrap import ensure_system_dependencies; ensure_system_dependencies(font_dir=Path.home()/'.local/share/fonts/montserrat')"
       - name: Prepare secrets and run
