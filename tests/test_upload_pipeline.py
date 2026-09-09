@@ -7,9 +7,11 @@ from pathlib import Path
 import pytest
 
 from mayzcats.checkpoint import RunCheckpoint
+from mayzcats.dedup import DuplicateDetector
 from mayzcats.history import HistoryStore
 from mayzcats.models import (
     Candidate,
+    HistoryEntry,
     MediaAsset,
     MusicTrack,
     Narration,
@@ -19,7 +21,7 @@ from mayzcats.models import (
     SourceTrace,
     WordTiming,
 )
-from mayzcats.pipeline import MayzCatsPipeline, RunFinalizer, parse_args
+from mayzcats.pipeline import MayzCatsPipeline, RunFinalizer, parse_args, retry_failed_upload
 from mayzcats.storage import DriveLayout
 from mayzcats.youtube_upload import build_video_body
 
@@ -181,7 +183,7 @@ def test_pipeline_prepares_media_and_mpt_music_before_paid_tts(tmp_path: Path) -
     )
 
     class History:
-        def recent(self, days: int):
+        def all(self):
             return []
 
     class Researcher:
@@ -192,7 +194,7 @@ def test_pipeline_prepares_media_and_mpt_music_before_paid_tts(tmp_path: Path) -
             return brief
 
     class Candidates:
-        def generate(self, trend_context: str):
+        def generate(self, trend_context: str, history):
             return [candidate]
 
         def choose_unused(self, candidates, recent, detector):
@@ -245,8 +247,9 @@ def test_pipeline_prepares_media_and_mpt_music_before_paid_tts(tmp_path: Path) -
     ("force_rerender", "expected_render_calls"),
     [(False, 0), (True, 1)],
 )
+@pytest.mark.parametrize("already_published", [False, True])
 def test_pipeline_resume_reuses_paid_tts_and_optionally_rerenders_video(
-    tmp_path: Path, force_rerender: bool, expected_render_calls: int
+    tmp_path: Path, force_rerender: bool, expected_render_calls: int, already_published: bool
 ) -> None:
     layout = DriveLayout.bootstrap(tmp_path / "drive", _defaults(tmp_path))
     checkpoint = RunCheckpoint.create(layout, "resume-run")
@@ -368,9 +371,13 @@ def test_pipeline_resume_reuses_paid_tts_and_optionally_rerenders_video(
     pipeline = MayzCatsPipeline.__new__(MayzCatsPipeline)
     pipeline.settings = Settings()
     pipeline.history = HistoryStore(layout.topic_history)
+    if already_published:
+        pipeline.history.commit_success(HistoryEntry(
+            candidate.subject, "different angle", datetime(2020, 1, 1, tzinfo=UTC), "older-video"
+        ))
     pipeline.researcher = MustNotRun()
     pipeline.candidate_generator = MustNotRun()
-    pipeline.detector = MustNotRun()
+    pipeline.detector = DuplicateDetector(MustNotRun())
     pipeline.script_writer = MustNotRun()
     pipeline.media = MustNotRun()
     pipeline.music = MustNotRun()
@@ -381,6 +388,13 @@ def test_pipeline_resume_reuses_paid_tts_and_optionally_rerenders_video(
     pipeline.uploader = Uploader()
     pipeline.finalizer = RunFinalizer(layout, pipeline.history)
 
+    if already_published:
+        with pytest.raises(RuntimeError, match="Duplicate topic blocked"):
+            pipeline.run(resume_id="resume-run", force_rerender=force_rerender)
+        assert video.calls == 0
+        assert checkpoint.directory.exists()
+        assert len(pipeline.history.all()) == 1
+        return
     result = pipeline.run(resume_id="resume-run", force_rerender=force_rerender)
 
     assert result["privacy"] == "public"
@@ -394,6 +408,38 @@ def test_cli_accepts_rerender_for_a_resumed_run() -> None:
 
     assert args.resume == "run-123"
     assert args.rerender is True
+
+
+@pytest.mark.parametrize("same_run", [False, True])
+def test_upload_only_retry_blocks_used_family_or_returns_existing_upload(tmp_path, monkeypatch, same_run):
+    layout = DriveLayout.bootstrap(tmp_path / "drive", _defaults(tmp_path))
+    package = layout.failed_dir / "retry-run"
+    package.mkdir()
+    (package / "post_payload.json").write_text(json.dumps(_payload().to_dict()))
+    (package / "run.json").write_text(json.dumps({
+        "topic": "Whisker Fatigue", "angle": "bowls", "run_id": "retry-run"
+    }))
+    HistoryStore(layout.topic_history).commit_success(HistoryEntry(
+        "Whisker Proprioception", "navigation", datetime(2020, 1, 1, tzinfo=UTC),
+        "published-id", {"run_id": "retry-run" if same_run else "other-run"},
+    ))
+    class NoUpload:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def upload(self, *args):
+            pytest.fail("Duplicate retry reached YouTube upload")
+
+    monkeypatch.setattr("mayzcats.pipeline.YoutubeUploader", NoUpload)
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://unused.example/v1")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-placeholder")
+    monkeypatch.setenv("OPENAI_MODEL", "test")
+    if same_run:
+        assert retry_failed_upload(layout.root, "retry-run")["youtube_video_id"] == "published-id"
+    else:
+        with pytest.raises(RuntimeError, match="Duplicate topic blocked"):
+            retry_failed_upload(layout.root, "retry-run")
+    assert package.exists()
 
 
 def _defaults(tmp_path: Path) -> Path:

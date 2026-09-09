@@ -34,6 +34,39 @@ class FakeLLM:
         return self.payload
 
 
+@pytest.mark.parametrize(("old", "new"), [
+    ("Feline slow blink communication", "Slow Blinking Communication"),
+    ("The feline slow blink", "The slow blink response"),
+    ("Whisker Proprioception", "Whisker Fatigue"),
+    ("Feline Whiskers (Vibrissae)", "Cat Whisker Anatomy"),
+    ("Cat Purring Physiology", "Feline purr anatomy and biomechanics"),
+])
+def test_actual_published_topic_variants_are_duplicates(old, new):
+    history = [HistoryEntry(old, "old angle", datetime(2026, 9, 1, tzinfo=UTC), "old")]
+    detector = DuplicateDetector(FakeEmbedder({old: [1, 0], new: [0, 1]}))
+    assert detector.find_duplicate(Candidate(new, "new angle", "evergreen"), history) is history[0]
+
+
+def test_semantic_judge_catches_synonyms_below_embedding_threshold():
+    old, new = "Kneading blankets", "Making biscuits"
+    history = [HistoryEntry(old, "comfort", datetime(2026, 9, 1, tzinfo=UTC), "old")]
+    detector = DuplicateDetector(
+        FakeEmbedder({old: [1, 0], new: [0, 1]}),
+        llm=FakeLLM({"duplicate_index": 0}),
+    )
+    assert detector.find_duplicate(Candidate(new, "origins", "evergreen"), history) is history[0]
+
+
+@pytest.mark.parametrize("response", [{}, {"duplicate_index": False}, {"duplicate_index": 9}])
+def test_invalid_semantic_verdict_does_not_accept_topic(response):
+    history = [HistoryEntry("sleep", "why", datetime(2026, 9, 1, tzinfo=UTC), "old")]
+    detector = DuplicateDetector(
+        FakeEmbedder({"sleep": [1, 0], "hunting": [0, 1]}), llm=FakeLLM(response)
+    )
+    with pytest.raises(ValueError, match="verdict"):
+        detector.find_duplicate(Candidate("hunting", "why", "evergreen"), history)
+
+
 def test_extract_json_accepts_fenced_response_and_rejects_trailing_garbage() -> None:
     assert extract_json_object('```json\n{"ok": true}\n```') == {"ok": True}
     with pytest.raises(ValueError, match="JSON object"):

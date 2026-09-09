@@ -177,6 +177,7 @@ class MayzCatsPipeline:
                 )
             ),
             float(settings.value("topic.subject_similarity_threshold", 0.90)),
+            llm=llm,
         )
         self.script_writer = ScriptWriter(llm)
         self.tts = ElevenLabsClient(
@@ -256,13 +257,13 @@ class MayzCatsPipeline:
                 _progress("[Topic 1/3] Checking current cat trends with Tavily...")
                 trend_context = self.researcher.discover_trends()
                 _progress("[Topic 2/3] Generating candidate topics with the LLM...")
-                candidates = self.candidate_generator.generate(trend_context=trend_context)
-                recent = self.history.recent(
-                    days=int(self.settings.value("topic.history_days", 90))
+                recent = self.history.all()
+                candidates = self.candidate_generator.generate(
+                    trend_context=trend_context, history=recent
                 )
                 _progress(
                     f"[Topic 3/3] Checking {len(candidates)} candidates against "
-                    f"{len(recent)} recent history entries..."
+                    f"{len(recent)} published history entries..."
                 )
                 candidate = self.candidate_generator.choose_unused(
                     candidates, recent, self.detector
@@ -270,6 +271,8 @@ class MayzCatsPipeline:
                 checkpoint.save_json("candidate.json", candidate.to_dict())
                 checkpoint.complete_stage(stage)
                 _progress(f"[Topic] Accepted: {candidate.subject} — {candidate.angle}")
+
+            _reject_published_topic(candidate, self.history, self.detector, run_id)
 
             stage = "research"
             if checkpoint.is_complete(stage):
@@ -300,6 +303,11 @@ class MayzCatsPipeline:
                 _progress(
                     f"[Script] Draft ready ({len(script_package.script.split())} words)"
                 )
+
+            _reject_published_topic(
+                Candidate(candidate.subject, script_package.title + "\n" + script_package.script,
+                          candidate.kind), self.history, self.detector, run_id
+            )
 
             stage = "media"
             desired = min(
@@ -497,6 +505,7 @@ class MayzCatsPipeline:
                 if youtube_video_id:
                     _progress(f"[Resume] Upload already completed: {youtube_video_id}")
             if not youtube_video_id:
+                _reject_published_topic(candidate, self.history, self.detector, run_id)
                 checkpoint.begin_stage(stage)
                 _progress(f"[YouTube] Uploading as {privacy.title()}...")
                 youtube_video_id = self.uploader.upload(final_video, post_payload)
@@ -594,11 +603,22 @@ def retry_failed_upload(drive_root: Path, run_id: str) -> dict[str, Any]:
     settings = Settings.load(layout)
     uploader = YoutubeUploader(layout.client_secret, layout.token_file)
     payload = payload_from_file(package / "post_payload.json")
-    video_id = uploader.upload(package / "final.mp4", payload)
     run_data = json.loads((package / "run.json").read_text(encoding="utf-8"))
     candidate = Candidate(
         subject=run_data["topic"], angle=run_data["angle"], kind="recovered"
     )
+    history = HistoryStore(layout.topic_history)
+    for entry in history.all():
+        if entry.metadata.get("run_id") == run_id:
+            return {"run_id": run_id, "youtube_video_id": entry.youtube_video_id,
+                    "privacy": entry.metadata.get("privacy", payload.privacy)}
+    settings.require_secrets("OPENAI_BASE_URL", "OPENAI_API_KEY", "OPENAI_MODEL")
+    detector = DuplicateDetector(SentenceTransformerEmbedder(), llm=OpenAICompatibleClient(
+        settings.secrets["OPENAI_BASE_URL"], settings.secrets["OPENAI_API_KEY"],
+        settings.secrets["OPENAI_MODEL"],
+    ))
+    _reject_published_topic(candidate, history, detector, run_id)
+    video_id = uploader.upload(package / "final.mp4", payload)
     finalizer = RunFinalizer(layout, HistoryStore(layout.topic_history))
     temporary_run = settings.work_root / f"retry-{run_id}"
     temporary_run.mkdir(parents=True, exist_ok=True)
@@ -617,6 +637,18 @@ def retry_failed_upload(drive_root: Path, run_id: str) -> dict[str, Any]:
     if package.exists():
         shutil.rmtree(package)
     return {"run_id": run_id, "youtube_video_id": video_id, "privacy": payload.privacy}
+
+
+def _reject_published_topic(candidate, history, detector, run_id: str) -> None:
+    entries = [e for e in history.all() if e.metadata.get("run_id") != run_id]
+    if not entries:
+        return
+    duplicate = detector.find_duplicate(candidate, entries)
+    if duplicate is not None:
+        raise RuntimeError(
+            f"Duplicate topic blocked: {candidate.subject!r} matches "
+            f"{duplicate.subject!r} (YouTube {duplicate.youtube_video_id}). Start a new run."
+        )
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:

@@ -2,7 +2,7 @@
 
 MayzCats V1 is a Google Colab-ready automation pipeline with a vendored
 [MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) runtime snapshot. It
-researches one factual cat topic, rejects recent semantic subject duplicates,
+researches one factual cat topic, rejects previously published topic families,
 renders a 1080x1920 Short with Jessica narration and MayzCats
 overlays, then uploads it to YouTube using the configured **Private** or
 **Public** privacy status. The default remains `private`.
@@ -14,8 +14,11 @@ overlays, then uploads it to YouTube using the configured **Private** or
 - Custom OpenAI-compatible `/chat/completions` client.
 - Tavily trend discovery, research, fact-grounded brief generation, and retained
   internal source trace.
-- 90-day semantic duplicate detection across the subject
-  with `sentence-transformers/all-MiniLM-L6-v2`.
+- All-history topic rejection using known aliases, sentence embeddings, and a
+  strict LLM semantic check. Changing the angle does not unlock a used topic.
+  Existing history needs no migration; `topic.history_days` no longer limits this check.
+  Generation receives published subjects; resume and upload-only retry also check
+  history. Invalid semantic verdicts stop the run before publication.
 - ElevenLabs Jessica (`cgSgspJ2msm6clMCkdW9`), multilingual v2, speed 1.08,
   character timing, sequential key fallback for explicit provider rejection,
   and a content-addressed Drive cache that prevents regenerating identical
