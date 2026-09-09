@@ -240,5 +240,16 @@
       "run_id": "74064b85-f474-48d4-9db1-2dea646fe487",
       "privacy": "public"
     }
+  },
+  {
+    "subject": "Cat Sleep Patterns",
+    "angle": "How many hours do domestic cats sleep and why?",
+    "published_at": "2026-09-09T22:40:09.796772+00:00",
+    "youtube_video_id": "2-mugNzCWcc",
+    "metadata": {
+      "title": "Why Do Cats Sleep So Much?",
+      "run_id": "28e5b026-98d3-4f42-b0a9-1575020daf02",
+      "privacy": "public"
+    }
   }
 ]
