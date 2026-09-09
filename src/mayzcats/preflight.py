@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from .config import REQUIRED_SECRETS, Settings
+from .config import Settings, required_secrets
 from .music_fetcher import REPO_MUSIC_DIR
 from .storage import DriveLayout
 
@@ -31,7 +31,7 @@ def check_environment(
         "youtube_client_secret": layout.client_secret.is_file(),
     }
     missing_secrets = [
-        name for name in REQUIRED_SECRETS if not settings.secrets.get(name, "").strip()
+        name for name in required_secrets(settings.pipeline) if not settings.secrets.get(name, "").strip()
     ]
     checks["required_secrets"] = not missing_secrets
     checks["missing_secrets"] = missing_secrets

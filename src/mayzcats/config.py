@@ -21,6 +21,18 @@ REQUIRED_SECRETS = (
 )
 
 
+def llm_secrets(provider: str) -> tuple[str, ...]:
+    if provider == "gemini":
+        return ("GEMINI_API_KEY",)
+    if provider == "openai":
+        return ("OPENAI_BASE_URL", "OPENAI_API_KEY", "OPENAI_MODEL")
+    raise ValueError(f"Unsupported llm.provider: {provider}")
+
+
+def required_secrets(pipeline: dict[str, Any]) -> tuple[str, ...]:
+    return llm_secrets(str(pipeline.get("llm", {}).get("provider", "openai"))) + REQUIRED_SECRETS[3:]
+
+
 @dataclass(slots=True)
 class Settings:
     layout: DriveLayout
@@ -43,7 +55,7 @@ class Settings:
         file_values = {key: value or "" for key, value in dotenv_values(layout.env_file).items()}
         secrets = {
             key: os.environ.get(key, file_values.get(key, ""))
-            for key in set(file_values) | set(REQUIRED_SECRETS)
+            for key in set(file_values) | set(REQUIRED_SECRETS) | {"GEMINI_API_KEY"}
         }
         return cls(layout, channel, pipeline, secrets, Path(work_root), Path(mpt_root))
 

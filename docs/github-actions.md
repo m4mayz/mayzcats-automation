@@ -11,17 +11,37 @@ not a precise timer. Manual dispatch can force a run.
 
 ## Repository Secrets
 
-Configure these under Settings -> Secrets and variables -> Actions:
+Configure these under Settings -> Secrets and variables -> Actions.
+The active config selects Gemini Interactions:
+
+```yaml
+llm:
+  provider: gemini
+  model: gemini-3.8-flash
+  api_revision: "2026-05-20"
+```
+
+For Gemini, add `GEMINI_API_KEY`; no OPENAI secrets are required.
+For the existing OpenAI-compatible provider, set `llm.provider: openai` and supply:
 
 - `OPENAI_BASE_URL`
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL`
+
+Required for both providers:
+
 - `ELEVENLABS_API_KEYS` (comma-separated)
 - `TAVILY_API_KEY`
 - `PEXELS_API_KEY`
 - `PIXABAY_API_KEY`
 - `YOUTUBE_CLIENT_SECRET_JSON` (contents of OAuth client_secret.json)
 - `YOUTUBE_TOKEN_JSON` (contents of authorized token.json, including refresh_token)
+
+Gemini uses POST /v1beta/interactions, x-goog-api-key and Api-Revision headers,
+JSON text responses and store=false. All editorial stages and semantic duplicate
+checks use the selected provider, including upload-only retry. Existing timeout
+and retry settings under network also apply to Gemini.
+See [Google's Interactions documentation](https://ai.google.dev/gemini-api/docs/get-started).
 
 Obtain initial YouTube consent once using the existing OAuth flow. Actions cannot
 prompt for login. The runner refreshes the access token per run; it never commits

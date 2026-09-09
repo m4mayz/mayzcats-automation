@@ -12,11 +12,11 @@ from typing import Any
 from uuid import uuid4
 
 from .checkpoint import RunCheckpoint, latest_failed_run
-from .config import REQUIRED_SECRETS, Settings
+from .config import Settings, required_secrets
 from .dedup import DuplicateDetector, SentenceTransformerEmbedder
 from .elevenlabs_tts import ElevenLabsClient
 from .history import HistoryStore
-from .llm import OpenAICompatibleClient
+from .llm import create_llm
 from .media_fetcher import MediaFetcher, PexelsProvider, PixabayProvider
 from .models import (
     Candidate,
@@ -150,14 +150,7 @@ class MayzCatsPipeline:
         self.settings = settings
         self.history = HistoryStore(settings.layout.topic_history)
         network_attempts = int(settings.value("network.max_attempts", 3))
-        llm = OpenAICompatibleClient(
-            settings.secrets["OPENAI_BASE_URL"],
-            settings.secrets["OPENAI_API_KEY"],
-            settings.secrets["OPENAI_MODEL"],
-            timeout=float(settings.value("network.llm_read_timeout_seconds", 180)),
-            max_attempts=network_attempts,
-            progress=_progress,
-        )
+        llm = create_llm(settings, progress=_progress)
         self.researcher = Researcher(
             TavilyClient(
                 settings.secrets["TAVILY_API_KEY"],
@@ -600,7 +593,7 @@ def build_settings(drive_root: Path, mpt_root: Path, work_root: Path) -> Setting
     project_root = Path(__file__).resolve().parents[2]
     layout = DriveLayout.bootstrap(drive_root, project_root / "config")
     settings = Settings.load(layout, work_root=work_root, mpt_root=mpt_root)
-    settings.require_secrets(*REQUIRED_SECRETS)
+    settings.require_secrets(*required_secrets(settings.pipeline))
     return settings
 
 
@@ -622,11 +615,7 @@ def retry_failed_upload(drive_root: Path, run_id: str) -> dict[str, Any]:
         if entry.metadata.get("run_id") == run_id:
             return {"run_id": run_id, "youtube_video_id": entry.youtube_video_id,
                     "privacy": entry.metadata.get("privacy", payload.privacy)}
-    settings.require_secrets("OPENAI_BASE_URL", "OPENAI_API_KEY", "OPENAI_MODEL")
-    detector = DuplicateDetector(SentenceTransformerEmbedder(), llm=OpenAICompatibleClient(
-        settings.secrets["OPENAI_BASE_URL"], settings.secrets["OPENAI_API_KEY"],
-        settings.secrets["OPENAI_MODEL"],
-    ))
+    detector = DuplicateDetector(SentenceTransformerEmbedder(), llm=create_llm(settings))
     _reject_published_topic(candidate, history, detector, run_id)
     video_id = uploader.upload(package / "final.mp4", payload)
     archive = settings.value("video.archive_dir")

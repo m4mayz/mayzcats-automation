@@ -99,3 +99,68 @@ class OpenAICompatibleClient:
         if not isinstance(content, str):
             raise ValueError("Model response content must be text")
         return extract_json_object(content)
+
+
+class GeminiInteractionsClient:
+    ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/interactions"
+
+    def __init__(
+        self, api_key: str, model: str = "gemini-3.8-flash", *,
+        api_revision: str = "2026-05-20", timeout: float = 180.0,
+        max_attempts: int = 3, progress: Callable[[str], None] = _print_progress,
+        http: httpx.Client | None = None,
+    ) -> None:
+        if not api_key.strip() or not model.strip():
+            raise ValueError("GEMINI_API_KEY and llm.model are required")
+        self.api_key, self.model, self.api_revision = api_key, model, api_revision
+        self.http = http or httpx.Client(timeout=httpx.Timeout(timeout, connect=min(30.0, timeout)))
+        self.max_attempts, self.progress = max_attempts, progress
+
+    def json(self, system: str, user: str) -> dict[str, Any]:
+        response = post_with_retries(
+            self.http, self.ENDPOINT, label="Gemini interaction",
+            max_attempts=self.max_attempts, progress=self.progress,
+            headers={"x-goog-api-key": self.api_key, "Content-Type": "application/json",
+                     "Api-Revision": self.api_revision},
+            json={"model": self.model, "input": user,
+                  "system_instruction": system + "\nReturn only a valid JSON object.",
+                  "store": False, "generation_config": {"temperature": 0.4},
+                  "response_format": {"type": "text", "mime_type": "application/json"}},
+        )
+        response.raise_for_status()
+        data = response.json()
+        if data.get("status") != "completed":
+            raise ValueError("Gemini interaction did not complete")
+        # REST revisions expose either model_output steps or an outputs array.
+        parts = [part for step in data.get("steps", [])
+                 if step.get("type") == "model_output" for part in step.get("content", [])]
+        if not parts:
+            parts = data.get("outputs", [])
+        content = "".join(part["text"] for part in parts
+                          if part.get("type") == "text" and isinstance(part.get("text"), str))
+        value = json.loads(content)
+        if not isinstance(value, dict):
+            raise ValueError("Gemini response must be a JSON object")
+        return value
+
+
+def create_llm(settings, *, progress: Callable[[str], None] = _print_progress):
+    from .config import llm_secrets
+
+    provider = str(settings.value("llm.provider", "openai"))
+    settings.require_secrets(*llm_secrets(provider))
+    options = {
+        "timeout": float(settings.value("network.llm_read_timeout_seconds", 180)),
+        "max_attempts": int(settings.value("network.max_attempts", 3)),
+        "progress": progress,
+    }
+    if provider == "gemini":
+        return GeminiInteractionsClient(
+            settings.secrets["GEMINI_API_KEY"],
+            str(settings.value("llm.model", "gemini-3.8-flash")),
+            api_revision=str(settings.value("llm.api_revision", "2026-05-20")), **options,
+        )
+    return OpenAICompatibleClient(
+        settings.secrets["OPENAI_BASE_URL"], settings.secrets["OPENAI_API_KEY"],
+        settings.secrets["OPENAI_MODEL"], **options,
+    )

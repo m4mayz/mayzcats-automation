@@ -1,3 +1,8 @@
+llm:
+    provider: gemini
+    model: gemini-3.8-flash
+    api_revision: "2026-05-20"
+
 topic:
     max_candidates: 20
     evergreen_percent: 80

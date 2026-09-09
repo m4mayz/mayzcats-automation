@@ -41,10 +41,13 @@ def gate(force=False):
 
 
 def prepare():
-    from mayzcats.config import REQUIRED_SECRETS
+    import yaml
+
+    from mayzcats.config import required_secrets
     from mayzcats.storage import DriveLayout
 
-    missing = [key for key in (*REQUIRED_SECRETS, "YOUTUBE_CLIENT_SECRET_JSON", "YOUTUBE_TOKEN_JSON")
+    config = yaml.safe_load((ROOT / "config/pipeline.yaml").read_text(encoding="utf-8"))
+    missing = [key for key in (*required_secrets(config), "YOUTUBE_CLIENT_SECRET_JSON", "YOUTUBE_TOKEN_JSON")
                if not os.environ.get(key, "").strip()]
     if missing:
         raise ValueError("Missing GitHub Secrets: " + ", ".join(missing))

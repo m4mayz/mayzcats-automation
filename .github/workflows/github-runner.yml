@@ -42,10 +42,10 @@ jobs:
         id: gate
         env:
           FORCE: ${{ inputs.force }}
-          READY: ${{ secrets.OPENAI_BASE_URL != '' && secrets.OPENAI_API_KEY != '' && secrets.OPENAI_MODEL != '' && secrets.ELEVENLABS_API_KEYS != '' && secrets.PEXELS_API_KEY != '' && secrets.PIXABAY_API_KEY != '' && secrets.TAVILY_API_KEY != '' && secrets.YOUTUBE_CLIENT_SECRET_JSON != '' && secrets.YOUTUBE_TOKEN_JSON != '' }}
+          READY: ${{ (secrets.GEMINI_API_KEY != '' || (secrets.OPENAI_BASE_URL != '' && secrets.OPENAI_API_KEY != '' && secrets.OPENAI_MODEL != '')) && secrets.ELEVENLABS_API_KEYS != '' && secrets.PEXELS_API_KEY != '' && secrets.PIXABAY_API_KEY != '' && secrets.TAVILY_API_KEY != '' && secrets.YOUTUBE_CLIENT_SECRET_JSON != '' && secrets.YOUTUBE_TOKEN_JSON != '' }}
         run: |
           if [ "$READY" != true ]; then
-            echo "::warning::Configure all nine GitHub Secrets listed in docs/github-actions.md before running."
+            echo "::warning::Configure provider and pipeline GitHub Secrets listed in docs/github-actions.md."
             echo "due=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -84,6 +84,7 @@ jobs:
           OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           ELEVENLABS_API_KEYS: ${{ secrets.ELEVENLABS_API_KEYS }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
