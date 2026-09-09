@@ -75,9 +75,39 @@ def test_selected_provider_controls_environment_secrets_and_factory(tmp_path, mo
     assert not any(name.startswith("OPENAI_") for name in required_secrets(settings.pipeline))
     settings.pipeline["llm"]["provider"] = "openai"
     settings.secrets.update(OPENAI_BASE_URL="https://example.test/v1",
-                            OPENAI_API_KEY="test-key", OPENAI_MODEL="test-model")
+                            OPENAI_API_KEY="test-key")
+    # llm.model is the single model knob; it is not duplicated as an OPENAI_MODEL secret.
+    settings.pipeline["llm"]["model"] = "openai/gpt-oss-120b"
+    assert create_llm(settings).model == "openai/gpt-oss-120b"
     assert isinstance(create_llm(settings), OpenAICompatibleClient)
     assert "GEMINI_API_KEY" not in required_secrets(settings.pipeline)
     settings.pipeline["llm"]["provider"] = "typo"
     with pytest.raises(ValueError, match="Unsupported"):
         create_llm(settings)
+
+
+def test_llm_rotates_to_the_next_key_on_quota_rejection_and_sticks_to_it() -> None:
+    import httpx
+
+    from mayzcats.llm import OpenAICompatibleClient
+
+    seen: list[str | None] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request.headers.get("authorization"))
+        if request.headers.get("authorization") == "Bearer gsk_1":
+            return httpx.Response(429)
+        return httpx.Response(200, json={"choices": [{"message": {"content": '{"ok": true}'}}]})
+
+    client = OpenAICompatibleClient(
+        "https://x/v1", "gsk_1, gsk_2", "m",
+        http=httpx.Client(transport=httpx.MockTransport(handler)),
+        progress=lambda message: None,
+    )
+    assert client.api_keys == ["gsk_1", "gsk_2"]
+    assert client.json("s", "u") == {"ok": True}
+    assert seen == ["Bearer gsk_1", "Bearer gsk_2"]
+
+    # The working key is preferred from now on instead of replaying the exhausted one.
+    assert client.json("s", "u") == {"ok": True}
+    assert seen[2:] == ["Bearer gsk_2"]

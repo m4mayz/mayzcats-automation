@@ -10,27 +10,26 @@ from dotenv import dotenv_values
 
 from .storage import DriveLayout
 
-REQUIRED_SECRETS = (
-    "OPENAI_BASE_URL",
-    "OPENAI_API_KEY",
-    "OPENAI_MODEL",
+# The model name lives in config/pipeline.yaml (llm.model) for every provider.
+PIPELINE_SECRETS = (
     "ELEVENLABS_API_KEYS",
     "PEXELS_API_KEY",
     "PIXABAY_API_KEY",
     "TAVILY_API_KEY",
 )
+REQUIRED_SECRETS = ("OPENAI_BASE_URL", "OPENAI_API_KEY", *PIPELINE_SECRETS)
 
 
 def llm_secrets(provider: str) -> tuple[str, ...]:
     if provider == "gemini":
         return ("GEMINI_API_KEY",)
     if provider == "openai":
-        return ("OPENAI_BASE_URL", "OPENAI_API_KEY", "OPENAI_MODEL")
+        return ("OPENAI_BASE_URL", "OPENAI_API_KEY")
     raise ValueError(f"Unsupported llm.provider: {provider}")
 
 
 def required_secrets(pipeline: dict[str, Any]) -> tuple[str, ...]:
-    return llm_secrets(str(pipeline.get("llm", {}).get("provider", "openai"))) + REQUIRED_SECRETS[3:]
+    return llm_secrets(str(pipeline.get("llm", {}).get("provider", "openai"))) + PIPELINE_SECRETS
 
 
 @dataclass(slots=True)

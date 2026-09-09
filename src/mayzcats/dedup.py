@@ -65,12 +65,23 @@ class DuplicateDetector:
         self.embedder = embedder
         self.subject_threshold = subject_threshold
         self.llm = llm
+        self._verdicts: dict[tuple[str, str, tuple[str, ...]], HistoryEntry | None] = {}
 
     def find_duplicate(
         self, candidate: Candidate, history: list[HistoryEntry]
     ) -> HistoryEntry | None:
         if not history:
             return None
+        # The pipeline re-runs this gate after topic choice, after research and before
+        # upload. Identical checks must not spend another LLM request.
+        key = (candidate.subject, candidate.angle, tuple(e.subject for e in history))
+        if key not in self._verdicts:
+            self._verdicts[key] = self._judge(candidate, history)
+        return self._verdicts[key]
+
+    def _judge(
+        self, candidate: Candidate, history: list[HistoryEntry]
+    ) -> HistoryEntry | None:
         for entry in history:
             if topic_family(candidate.subject) == topic_family(entry.subject):
                 return entry

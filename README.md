@@ -68,8 +68,7 @@ overlays, then uploads it to YouTube using the configured **Private** or
 
     ```dotenv
     OPENAI_BASE_URL=https://your-compatible-host.example/v1
-    OPENAI_API_KEY=your-key
-    OPENAI_MODEL=your-model
+    OPENAI_API_KEY=key1,key2,key3
     ELEVENLABS_API_KEYS=key1,key2,key3,key4
     PEXELS_API_KEY=your-key
     PIXABAY_API_KEY=your-key

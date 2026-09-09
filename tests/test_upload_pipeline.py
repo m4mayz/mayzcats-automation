@@ -433,7 +433,6 @@ def test_upload_only_retry_blocks_used_family_or_returns_existing_upload(tmp_pat
     monkeypatch.setattr("mayzcats.pipeline.YoutubeUploader", NoUpload)
     monkeypatch.setenv("OPENAI_BASE_URL", "https://unused.example/v1")
     monkeypatch.setenv("OPENAI_API_KEY", "test-placeholder")
-    monkeypatch.setenv("OPENAI_MODEL", "test")
     if same_run:
         assert retry_failed_upload(layout.root, "retry-run")["youtube_video_id"] == "published-id"
     else:
@@ -446,6 +445,8 @@ def _defaults(tmp_path: Path) -> Path:
     defaults = tmp_path / "defaults"
     defaults.mkdir(exist_ok=True)
     (defaults / "channel.example.yaml").write_text("channel: {}\n", encoding="utf-8")
-    (defaults / "pipeline.example.yaml").write_text("pipeline: {}\n", encoding="utf-8")
+    (defaults / "pipeline.example.yaml").write_text(
+        "pipeline: {}\nllm:\n  model: test-model\n", encoding="utf-8"
+    )
     (defaults / ".env.example").write_text("OPENAI_API_KEY=\n", encoding="utf-8")
     return defaults

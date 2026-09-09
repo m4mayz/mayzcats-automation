@@ -1,6 +1,9 @@
 llm:
-    provider: gemini
-    model: gemini-3.8-flash
+    # openai: any OpenAI-compatible gateway, via OPENAI_BASE_URL and OPENAI_API_KEY.
+    # gemini: the Interactions API, via GEMINI_API_KEY. api_revision applies to gemini only.
+    # Both API key secrets accept a comma-separated list and rotate on quota or auth rejection.
+    provider: openai
+    model: openai/gpt-oss-120b
     api_revision: "2026-05-20"
 
 topic:
@@ -15,6 +18,7 @@ network:
     max_attempts: 3
     tavily_read_timeout_seconds: 120
     llm_read_timeout_seconds: 180
+
 research:
     min_sources: 3
     max_results: 8

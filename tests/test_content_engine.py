@@ -234,3 +234,27 @@ def test_duration_revision_does_not_request_a_disclaimer() -> None:
 
     assert revised.script == "A shorter general health explanation."
     assert all("disclaimer" not in prompt.lower() for call in writer.llm.calls for prompt in call)
+
+
+def test_repeated_duplicate_gate_reuses_the_verdict_until_history_changes() -> None:
+    vectors = {
+        "kneading blankets": [1.0, 0.0],
+        "night zoomies": [0.0, 1.0],
+        "sunbeam napping": [0.5, 0.5],
+    }
+    history = [
+        HistoryEntry("kneading blankets", "comfort", datetime(2026, 9, 1, tzinfo=UTC), "old")
+    ]
+    llm = FakeLLM({"duplicate_index": None})
+    detector = DuplicateDetector(FakeEmbedder(vectors), llm=llm)
+    candidate = Candidate("night zoomies", "why at 3am", "evergreen")
+
+    # The pipeline gates the same candidate three times per run.
+    assert [detector.find_duplicate(candidate, history) for _ in range(3)] == [None] * 3
+    assert len(llm.calls) == 1
+
+    history.append(
+        HistoryEntry("sunbeam napping", "why", datetime(2026, 9, 2, tzinfo=UTC), "old2")
+    )
+    assert detector.find_duplicate(candidate, history) is None
+    assert len(llm.calls) == 2

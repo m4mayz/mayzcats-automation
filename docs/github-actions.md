@@ -26,7 +26,10 @@ For the existing OpenAI-compatible provider, set `llm.provider: openai` and supp
 
 - `OPENAI_BASE_URL`
 - `OPENAI_API_KEY`
-- `OPENAI_MODEL`
+
+The model name is not a secret. Set it once as `llm.model` in `config/pipeline.yaml`;
+it applies to whichever provider is selected. Both API key secrets accept a
+comma-separated list and rotate to the next key on a quota or auth rejection.
 
 Required for both providers:
 
