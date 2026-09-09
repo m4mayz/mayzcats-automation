@@ -1,21 +1,21 @@
 channel:
-  name: MayzCats
-  platform: youtube_shorts
-  language: en
-  audience: "13+"
-  category_id: "15"
-  made_for_kids: false
-  privacy: private
+    name: MayzCats
+    platform: youtube_shorts
+    language: en
+    audience: "13+"
+    category_id: "15"
+    made_for_kids: false
+    privacy: public
 
 content:
-  niche: cats
-  family_friendly: true
-  profanity: false
-  clickbait_wording: false
-  playful_personification: true
-  tone:
-    - entertaining
-    - warm
-    - curious
-    - friendly
-    - slightly_playful
+    niche: cats
+    family_friendly: true
+    profanity: false
+    clickbait_wording: false
+    playful_personification: true
+    tone:
+        - entertaining
+        - warm
+        - curious
+        - friendly
+        - slightly_playful

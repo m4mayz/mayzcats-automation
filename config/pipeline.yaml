@@ -15,7 +15,6 @@ network:
     max_attempts: 3
     tavily_read_timeout_seconds: 120
     llm_read_timeout_seconds: 180
-
 research:
     min_sources: 3
     max_results: 8
@@ -31,7 +30,7 @@ tts:
     voice_name: Jessica
     voice_id: cgSgspJ2msm6clMCkdW9
     model: eleven_multilingual_v2
-    speed: 1.08
+    speed: 1
     output_format: mp3_44100_128
 
 media:
@@ -40,7 +39,7 @@ media:
     max_download_bytes: 150000000
 
 music:
-    volume: 0.08
+    volume: 0.2
     provider: moneyprinterturbo_builtin
     excluded_files: []
 
@@ -54,7 +53,7 @@ video:
     watermark: MayzCats
 
 youtube:
-    privacy: private
+    privacy: public
     category_id: "15"
     made_for_kids: false
     chunk_size_bytes: 8388608

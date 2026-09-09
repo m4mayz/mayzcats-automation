@@ -29,5 +29,7 @@ runs/
 *.mov
 *.webm
 
+.env.github
+
 !src/music/
 !src/music/*.mp3
