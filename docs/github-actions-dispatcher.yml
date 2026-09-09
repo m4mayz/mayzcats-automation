@@ -1,0 +1,25 @@
+name: MayzCats every five hours
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Run even if current five-hour slot already ran
+        type: boolean
+        default: true
+      mode:
+        description: Auto resumes pending run; new abandons its retry
+        type: choice
+        options: [auto, new]
+        default: auto
+permissions:
+  contents: write
+  actions: read
+jobs:
+  mayzcats:
+    uses: m4mayz/mayzcats-automation/.github/workflows/github-runner.yml@codex/github-actions
+    with:
+      force: ${{ inputs.force || false }}
+      mode: ${{ inputs.mode || 'auto' }}
+    secrets: inherit

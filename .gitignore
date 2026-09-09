@@ -14,14 +14,13 @@ artifacts/
 .worktrees/
 
 # Private and runtime-owned data
-config/channel.yaml
-config/pipeline.yaml
 secrets/
-state/
 cache/
 failed/
 logs/
 runs/
+.runtime/
+.render/
 
 # Generated media
 *.mp3

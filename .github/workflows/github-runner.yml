@@ -1,0 +1,125 @@
+name: MayzCats GitHub runner
+on:
+  workflow_call:
+    inputs:
+      force:
+        type: boolean
+        default: false
+      mode:
+        type: string
+        default: auto
+  workflow_dispatch:
+    inputs:
+      force:
+        type: boolean
+        default: true
+      mode:
+        type: choice
+        options: [auto, new]
+        default: auto
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: mayzcats-github-runtime
+  cancel-in-progress: false
+
+jobs:
+  video:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      PYTHONUNBUFFERED: "1"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/github-actions
+          fetch-depth: 0
+      - name: Check five-hour slot
+        id: gate
+        env:
+          FORCE: ${{ inputs.force }}
+          READY: ${{ secrets.OPENAI_BASE_URL != '' && secrets.OPENAI_API_KEY != '' && secrets.OPENAI_MODEL != '' && secrets.ELEVENLABS_API_KEYS != '' && secrets.PEXELS_API_KEY != '' && secrets.PIXABAY_API_KEY != '' && secrets.TAVILY_API_KEY != '' && secrets.YOUTUBE_CLIENT_SECRET_JSON != '' && secrets.YOUTUBE_TOKEN_JSON != '' }}
+        run: |
+          if [ "$READY" != true ]; then
+            echo "::warning::Configure all nine GitHub Secrets listed in docs/github-actions.md before running."
+            echo "due=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          args=()
+          if [ "$FORCE" = true ]; then args+=(--force); fi
+          python3 scripts/github_runner.py gate "${args[@]}"
+      - uses: actions/setup-python@v5
+        if: steps.gate.outputs.due == 'true'
+        with:
+          python-version: "3.11"
+      - name: Restore previous runtime artifact
+        if: steps.gate.outputs.due == 'true' && steps.gate.outputs.snapshot != ''
+        env:
+          SNAPSHOT: ${{ steps.gate.outputs.snapshot }}
+        run: |
+          mkdir -p .runtime
+          gh run download "$SNAPSHOT" --name "runtime-$SNAPSHOT" --dir .runtime
+      - name: Install Python dependencies
+        if: steps.gate.outputs.due == 'true'
+        run: |
+          python -m pip install uv
+          python -m venv .venv
+          uv pip install --python .venv/bin/python torch --index-url https://download.pytorch.org/whl/cpu
+          uv pip install --python .venv/bin/python -e .
+          uv sync --project vendor/MoneyPrinterTurbo --frozen --no-dev --python 3.11
+      - name: Install video dependencies
+        if: steps.gate.outputs.due == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fontconfig
+          .venv/bin/python -c "from pathlib import Path; from mayzcats.colab_bootstrap import ensure_system_dependencies; ensure_system_dependencies(font_dir=Path.home()/'.local/share/fonts/montserrat')"
+      - name: Prepare secrets and run
+        id: pipeline
+        if: steps.gate.outputs.due == 'true'
+        env:
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+          ELEVENLABS_API_KEYS: ${{ secrets.ELEVENLABS_API_KEYS }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          YOUTUBE_CLIENT_SECRET_JSON: ${{ secrets.YOUTUBE_CLIENT_SECRET_JSON }}
+          YOUTUBE_TOKEN_JSON: ${{ secrets.YOUTUBE_TOKEN_JSON }}
+          MODE: ${{ inputs.mode }}
+        run: |
+          .venv/bin/python scripts/github_runner.py prepare
+          .venv/bin/python scripts/github_runner.py run --mode "$MODE"
+      - name: Export public state
+        if: always() && steps.pipeline.outcome != 'skipped'
+        run: python3 scripts/github_runner.py persist
+      - name: Save runtime for recovery
+        if: always() && steps.pipeline.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-${{ github.run_id }}
+          retention-days: 90
+          if-no-files-found: warn
+          include-hidden-files: true
+          path: |
+            .runtime/snapshot.json
+            .runtime/runs/
+            .runtime/cache/
+            .runtime/failed/
+            .runtime/logs/
+            .runtime/output/
+      - name: Persist branch state
+        if: always() && steps.pipeline.outcome != 'skipped'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- state/topic_history.json state/runs.jsonl state/actions.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(state): record Actions run [skip ci]"
+            git pull --rebase origin codex/github-actions
+            git push origin HEAD:codex/github-actions
+          fi

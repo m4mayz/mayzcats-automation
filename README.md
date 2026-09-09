@@ -1,5 +1,9 @@
 # MayzCats V1
 
+This branch runs on GitHub Actions with GitHub Secrets, branch-owned config/state,
+and recovery artifacts. See [GitHub Actions setup](docs/github-actions.md).
+The Colab instructions below remain for the original runtime.
+
 MayzCats V1 is a Google Colab-ready automation pipeline with a vendored
 [MoneyPrinterTurbo](https://github.com/harry0703/MoneyPrinterTurbo) runtime snapshot. It
 researches one factual cat topic, rejects previously published topic families,

@@ -1,0 +1,56 @@
+topic:
+    max_candidates: 20
+    evergreen_percent: 80
+    trending_percent: 20
+    history_days: 90
+    subject_similarity_threshold: 0.90
+    embedding_model: sentence-transformers/all-MiniLM-L6-v2
+
+network:
+    max_attempts: 3
+    tavily_read_timeout_seconds: 120
+    llm_read_timeout_seconds: 180
+
+research:
+    min_sources: 3
+    max_results: 8
+    search_depth: advanced
+
+script:
+    min_duration_seconds: 35
+    max_duration_seconds: 55
+    target_duration_seconds: 45
+    max_tts_attempts: 3
+
+tts:
+    voice_name: Jessica
+    voice_id: cgSgspJ2msm6clMCkdW9
+    model: eleven_multilingual_v2
+    speed: 1.08
+    output_format: mp3_44100_128
+
+media:
+    desired_scenes: 9
+    minimum_assets: 4
+    max_download_bytes: 150000000
+
+music:
+    volume: 0.08
+    provider: moneyprinterturbo_builtin
+    excluded_files: []
+
+video:
+    width: 1080
+    height: 1920
+    fps: 30
+    archive_dir: .runtime/output
+    font: Montserrat
+    font_bold: true
+    watermark: MayzCats
+
+youtube:
+    privacy: private
+    category_id: "15"
+    made_for_kids: false
+    chunk_size_bytes: 8388608
+    max_retries: 5

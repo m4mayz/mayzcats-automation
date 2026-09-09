@@ -51,9 +51,12 @@ def redact(text: str, secrets: list[str]) -> str:
 
 
 class RunFinalizer:
-    def __init__(self, layout: DriveLayout, history: HistoryStore) -> None:
+    def __init__(
+        self, layout: DriveLayout, history: HistoryStore, archive_dir: Path | None = None
+    ) -> None:
         self.layout = layout
         self.history = history
+        self.archive_dir = archive_dir
 
     def success(
         self,
@@ -93,6 +96,10 @@ class RunFinalizer:
         self.layout.append_run(complete)
         if checkpoint is not None:
             checkpoint.finish(youtube_video_id)
+        if self.archive_dir is not None:
+            source = (checkpoint.directory if checkpoint is not None else run_dir) / "final.mp4"
+            self.archive_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, self.archive_dir / f"{run_id}.mp4")
         if Path(run_dir).exists():
             shutil.rmtree(run_dir)
         if checkpoint is not None:
@@ -206,7 +213,10 @@ class MayzCatsPipeline:
             chunk_size=int(settings.value("youtube.chunk_size_bytes", 8 * 1024 * 1024)),
             max_retries=int(settings.value("youtube.max_retries", 5)),
         )
-        self.finalizer = RunFinalizer(settings.layout, self.history)
+        archive = settings.value("video.archive_dir")
+        self.finalizer = RunFinalizer(
+            settings.layout, self.history, Path(archive) if archive else None
+        )
 
     def run(
         self,
@@ -619,7 +629,10 @@ def retry_failed_upload(drive_root: Path, run_id: str) -> dict[str, Any]:
     ))
     _reject_published_topic(candidate, history, detector, run_id)
     video_id = uploader.upload(package / "final.mp4", payload)
-    finalizer = RunFinalizer(layout, HistoryStore(layout.topic_history))
+    archive = settings.value("video.archive_dir")
+    finalizer = RunFinalizer(
+        layout, HistoryStore(layout.topic_history), Path(archive) if archive else None
+    )
     temporary_run = settings.work_root / f"retry-{run_id}"
     temporary_run.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(package / "final.mp4", temporary_run / "final.mp4")
