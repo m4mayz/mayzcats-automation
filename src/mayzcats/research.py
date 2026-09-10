@@ -39,6 +39,11 @@ def validate_source_numbers(values: list[Any], *, source_count: int, minimum: in
     return numbers
 
 
+# Tavily "advanced" depth returns multi-KB bodies; both prompt builders below clip to
+# this so a wide result set cannot blow past a provider's request size limit.
+EXCERPT_CHARS = 500
+
+
 def normalize_sources(raw_results: list[dict[str, Any]], *, minimum: int = 3) -> list[SourceTrace]:
     seen: set[str] = set()
     sources: list[SourceTrace] = []
@@ -150,7 +155,8 @@ class Researcher:
         if not results:
             return ""
         return "\n".join(
-            f"- {item.get('title', '')}: {item.get('content', '')[:500]} ({item.get('url', '')})"
+            f"- {item.get('title', '')}: {item.get('content', '')[:EXCERPT_CHARS]} "
+            f"({item.get('url', '')})"
             for item in results[: self.max_results]
         )
 
@@ -170,7 +176,8 @@ class Researcher:
             f"Normalized {len(sources)} distinct sources"
         )
         evidence = "\n\n".join(
-            f"SOURCE {index}: {source.title}\nURL: {source.url}\nEXCERPT: {source.content}"
+            f"SOURCE {index}: {source.title}\nURL: {source.url}\n"
+            f"EXCERPT: {source.content[:EXCERPT_CHARS]}"
             for index, source in enumerate(sources, start=1)
         )
         self.progress(

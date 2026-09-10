@@ -258,3 +258,26 @@ def test_repeated_duplicate_gate_reuses_the_verdict_until_history_changes() -> N
     )
     assert detector.find_duplicate(candidate, history) is None
     assert len(llm.calls) == 2
+
+
+def test_research_prompt_clips_long_source_bodies_before_calling_the_llm() -> None:
+    from mayzcats.research import EXCERPT_CHARS, Researcher
+
+    class FatTavily:
+        def search(self, query, **kwargs):
+            return [
+                {"title": f"t{i}", "url": f"https://s{i}.test", "content": "x" * 20_000}
+                for i in range(8)
+            ]
+
+    llm = FakeLLM({"summary": "s", "claims": ["c"], "source_numbers": [1, 2], "medical": False})
+    researcher = Researcher(FatTavily(), llm, progress=lambda message: None)
+    brief = researcher.research(
+        Candidate("cat naps", "why", "evergreen", search_queries=["a", "b", "c"])
+    )
+
+    user_prompt = llm.calls[0][1]
+    assert "x" * (EXCERPT_CHARS + 1) not in user_prompt
+    # Every source stays numbered, so source_numbers keep validating against the prompt.
+    assert user_prompt.count("SOURCE ") == len(brief.sources)
+    assert len(user_prompt) < 20_000
