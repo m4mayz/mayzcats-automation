@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 
 import httpx
 
+from .llm import as_list
 from .models import Candidate, ResearchBrief, SourceTrace
 from .network import post_with_retries
 
@@ -193,13 +194,14 @@ Return {{"summary":"...","claims":["..."],"source_numbers":[1,2],
 "medical":false}}. Every claim must be supported by at least one numbered source
 and the brief must use at least two distinct sources. Keep source traces internal.""",
         )
-        claims = [str(item).strip() for item in response.get("claims", []) if str(item).strip()]
+        claims = [str(item).strip() for item in as_list(response.get("claims"))
+                  if str(item).strip()]
         summary = str(response.get("summary", "")).strip()
         medical = bool(response.get("medical", False))
         if not claims or not summary:
             raise InsufficientResearchError("Fact checker returned no supported claims")
         validate_source_numbers(
-            list(response.get("source_numbers") or []), source_count=len(sources)
+            as_list(response.get("source_numbers")), source_count=len(sources)
         )
         return ResearchBrief(
             summary=summary,

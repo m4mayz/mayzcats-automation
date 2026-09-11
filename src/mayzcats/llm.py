@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Callable
 from typing import Any
 
@@ -27,6 +28,28 @@ def extract_json_object(text: str) -> dict[str, Any]:
         if isinstance(value, dict):
             return value
     raise ValueError("LLM response did not contain a valid JSON object")
+
+
+def as_list(value: Any, *, separator: str = r"[,\n]+") -> list[Any]:
+    """Coerce a list field. Models answer these with a bare string often enough that
+    unpacking one into characters is a real failure mode, not a hypothetical."""
+
+    if isinstance(value, str):
+        return [chunk for chunk in re.split(separator, value) if chunk.strip()]
+    if isinstance(value, (list, tuple)):
+        return list(value)
+    return []
+
+
+def as_text(value: Any) -> str:
+    """Flatten a text field the model may have returned as sectioned parts, so dict
+    keys and Python punctuation never reach a caller that renders it verbatim."""
+
+    if isinstance(value, dict):
+        return "\n".join(as_text(item) for item in value.values())
+    if isinstance(value, (list, tuple)):
+        return "\n".join(as_text(item) for item in value)
+    return "" if value is None else str(value)
 
 
 ROTATE_STATUSES = {401, 403, 429}

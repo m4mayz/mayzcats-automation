@@ -281,3 +281,83 @@ def test_research_prompt_clips_long_source_bodies_before_calling_the_llm() -> No
     # Every source stays numbered, so source_numbers keep validating against the prompt.
     assert user_prompt.count("SOURCE ") == len(brief.sources)
     assert len(user_prompt) < 20_000
+
+
+def _response(**overrides):
+    base = {
+        "script": "Cats knead blankets because it comforts them.",
+        "title": "Why Cats Knead",
+        "description": "A sourced explanation.",
+        "hashtags": ["#cats", "#catfacts"],
+        "tags": ["kneading"],
+        "hook_text": "Cats knead for a reason",
+        "hook_keyword": "knead",
+        "search_terms": ["cat kneading"],
+        "beats": ["cat kneading"],
+        "mood": "warm",
+    }
+    return {**base, **overrides}
+
+
+def test_string_hashtags_do_not_become_one_tag_per_character() -> None:
+    from mayzcats.script_writer import package_from_response
+
+    package = package_from_response(
+        _response(hashtags="#shorts #cats #catfacts"), medical=False
+    )
+
+    assert package.hashtags == ["#shorts", "#cats", "#catfacts"]
+
+
+def test_sectioned_script_is_narrated_without_its_labels() -> None:
+    from mayzcats.script_writer import package_from_response
+
+    as_dict = package_from_response(
+        _response(script={
+            "hook": "Ever watched a cat knead?",
+            "closing question": "What does your cat do?",
+        }),
+        medical=False,
+    )
+    as_headings = package_from_response(
+        _response(script="Hook: Ever watched a cat knead?\nClosing question: What now?"),
+        medical=False,
+    )
+
+    for text in (as_dict.script, as_headings.script):
+        lowered = text.lower()
+        assert "hook" not in lowered and "closing question" not in lowered
+        assert "{" not in text and "'" not in text
+    assert as_dict.script == "Ever watched a cat knead?\nWhat does your cat do?"
+
+
+@pytest.mark.parametrize("field", ["tags", "beats", "search_terms"])
+def test_other_string_list_fields_survive_the_same_shape(field) -> None:
+    from mayzcats.script_writer import package_from_response
+
+    package = package_from_response(_response(**{field: "first, second"}), medical=False)
+
+    assert "first" in getattr(package, field)
+
+
+def test_string_claims_do_not_become_one_claim_per_character() -> None:
+    from mayzcats.research import Researcher
+
+    class Tavily:
+        def search(self, query, **kwargs):
+            return [
+                {"title": f"t{i}", "url": f"https://s{i}.test", "content": "cats nap a lot"}
+                for i in range(3)
+            ]
+
+    llm = FakeLLM({
+        "summary": "Cats nap often.",
+        "claims": "Cats nap 16 hours a day, Naps come in short bursts",
+        "source_numbers": "1,2",
+        "medical": False,
+    })
+    brief = Researcher(Tavily(), llm, progress=lambda message: None).research(
+        Candidate("cat naps", "why", "evergreen", search_queries=["a"])
+    )
+
+    assert brief.claims == ["Cats nap 16 hours a day", "Naps come in short bursts"]
