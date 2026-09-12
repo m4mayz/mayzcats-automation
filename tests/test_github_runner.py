@@ -75,6 +75,37 @@ def test_auto_abandons_duplicate_checkpoint_and_starts_new_run(tmp_path, monkeyp
     assert "--resume" not in commands[-1]
 
 
+def test_duplicate_created_during_run_is_abandoned_and_retried_immediately(tmp_path, monkeypatch):
+    runtime, state = tmp_path / ".runtime", tmp_path / "state"
+    monkeypatch.setattr(runner, "RUNTIME", runtime)
+    monkeypatch.setattr(runner, "STATE", state)
+    monkeypatch.setattr(runner, "SCHEDULE", state / "actions.json")
+    runner.write_json(runtime / "attempt.json", {"slot": 42})
+    (runtime / "runs").mkdir(parents=True)
+    monkeypatch.setattr("mayzcats.youtube_upload.load_credentials", lambda *args, **kwargs: None)
+    pipeline_calls = 0
+
+    def completed(command):
+        nonlocal pipeline_calls
+        if "mayzcats.preflight" in command:
+            return SimpleNamespace(returncode=0)
+        pipeline_calls += 1
+        if pipeline_calls == 1:
+            runner.write_json(runtime / "runs/duplicate/state.json", {
+                "run_id": "duplicate",
+                "status": "failed",
+                "error": "RuntimeError: Duplicate topic blocked: 'smell' matches 'flehmen'",
+            })
+            return SimpleNamespace(returncode=1)
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(runner.subprocess, "run", completed)
+
+    assert runner.run("auto") == 0
+    assert pipeline_calls == 2
+    assert not (runtime / "runs/duplicate").exists()
+
+
 def test_success_archives_video_before_cleanup(tmp_path):
     defaults = Path(__file__).resolve().parents[1] / "config"
     layout = DriveLayout.bootstrap(tmp_path / "runtime", defaults)

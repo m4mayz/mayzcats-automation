@@ -15,6 +15,7 @@ RUNTIME = ROOT / ".runtime"
 STATE = ROOT / "state"
 SCHEDULE = STATE / "actions.json"
 PERIOD = 5 * 60 * 60
+MAX_DUPLICATE_TOPICS = 20
 
 
 def read_json(path, default):
@@ -91,9 +92,10 @@ def run(mode):
                             "--drive-root", str(RUNTIME), "--mpt-root", str(mpt)])
     if check.returncode:
         return check.returncode
-    command = [sys.executable, "-u", "-m", "mayzcats.pipeline",
-               "--drive-root", str(RUNTIME), "--mpt-root", str(mpt),
-               "--work-root", str(ROOT / ".render")]
+    base_command = [sys.executable, "-u", "-m", "mayzcats.pipeline",
+                    "--drive-root", str(RUNTIME), "--mpt-root", str(mpt),
+                    "--work-root", str(ROOT / ".render")]
+    command = [*base_command]
     pending = read_json(SCHEDULE, {}).get("pending_run")
     if pending and mode == "auto":
         checkpoint_dir = RUNTIME / "runs" / pending
@@ -110,7 +112,24 @@ def run(mode):
         if not (RUNTIME / "runs" / pending / "state.json").is_file():
             raise RuntimeError("Pending checkpoint missing; restore artifact or explicitly select new mode")
         command.extend(["--resume", pending])
-    return subprocess.run(command).returncode
+    for _ in range(MAX_DUPLICATE_TOPICS):
+        result = subprocess.run(command)
+        if result.returncode == 0:
+            return 0
+        prior = set(attempt["prior_checkpoints"])
+        duplicate = next((
+            path.parent for path in (RUNTIME / "runs").glob("*/state.json")
+            if (path.parent.name == attempt.get("resume_id") or path.parent.name not in prior)
+            and "Duplicate topic blocked:" in str(read_json(path, {}).get("error", ""))
+        ), None)
+        if duplicate is None:
+            return result.returncode
+        print(f"[Recovery] Abandoning duplicate topic checkpoint {duplicate.name}; trying another topic.")
+        shutil.rmtree(duplicate)
+        attempt["resume_id"] = None
+        write_json(RUNTIME / "attempt.json", attempt)
+        command = [*base_command]
+    return result.returncode
 
 
 def persist():
