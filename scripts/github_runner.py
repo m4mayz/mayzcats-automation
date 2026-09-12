@@ -95,6 +95,13 @@ def run(mode):
                "--drive-root", str(RUNTIME), "--mpt-root", str(mpt),
                "--work-root", str(ROOT / ".render")]
     pending = read_json(SCHEDULE, {}).get("pending_run")
+    if pending and mode == "auto":
+        checkpoint_dir = RUNTIME / "runs" / pending
+        checkpoint = read_json(checkpoint_dir / "state.json", {})
+        if "Duplicate topic blocked:" in str(checkpoint.get("error", "")):
+            print(f"[Recovery] Abandoning duplicate topic checkpoint {pending}; starting a new run.")
+            shutil.rmtree(checkpoint_dir)
+            pending = None
     attempt = read_json(RUNTIME / "attempt.json", {})
     attempt["prior_checkpoints"] = [path.name for path in (RUNTIME / "runs").iterdir()]
     attempt["resume_id"] = pending if mode == "auto" else None

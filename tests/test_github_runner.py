@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 from mayzcats.history import HistoryStore
 from mayzcats.models import Candidate
@@ -47,6 +48,31 @@ def test_persist_exports_only_public_state_and_tracks_pending_run(tmp_path, monk
     assert runner.read_json(state / "actions.json", {}) == {
         "last_slot": 42, "snapshot_run_id": "123", "pending_run": "pending",
     }
+
+
+def test_auto_abandons_duplicate_checkpoint_and_starts_new_run(tmp_path, monkeypatch):
+    runtime, state = tmp_path / ".runtime", tmp_path / "state"
+    monkeypatch.setattr(runner, "RUNTIME", runtime)
+    monkeypatch.setattr(runner, "STATE", state)
+    monkeypatch.setattr(runner, "SCHEDULE", state / "actions.json")
+    runner.write_json(state / "actions.json", {"pending_run": "duplicate"})
+    runner.write_json(runtime / "runs/duplicate/state.json", {
+        "run_id": "duplicate",
+        "status": "failed",
+        "error": "RuntimeError: Duplicate topic blocked: 'body language' matches 'tail communication'",
+    })
+    monkeypatch.setattr("mayzcats.youtube_upload.load_credentials", lambda *args, **kwargs: None)
+    commands = []
+
+    def completed(command):
+        commands.append(command)
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(runner.subprocess, "run", completed)
+
+    assert runner.run("auto") == 0
+    assert not (runtime / "runs/duplicate").exists()
+    assert "--resume" not in commands[-1]
 
 
 def test_success_archives_video_before_cleanup(tmp_path):
