@@ -132,7 +132,7 @@ def test_upload_failure_writes_complete_reusable_package_without_history(tmp_pat
     assert json.loads(layout.topic_history.read_text(encoding="utf-8")) == []
 
 
-def test_pipeline_prepares_media_and_mpt_music_before_paid_tts(tmp_path: Path) -> None:
+def test_pipeline_skips_oversize_media_before_paid_tts(tmp_path: Path) -> None:
     layout = DriveLayout.bootstrap(tmp_path / "drive", _defaults(tmp_path))
 
     class Settings:
@@ -145,7 +145,7 @@ def test_pipeline_prepares_media_and_mpt_music_before_paid_tts(tmp_path: Path) -
 
         def value(self, path: str, default=None):
             return {
-                "media.desired_scenes": 1,
+                "media.desired_scenes": 2,
                 "media.minimum_assets": 1,
             }.get(path, default)
 
@@ -164,7 +164,7 @@ def test_pipeline_prepares_media_and_mpt_music_before_paid_tts(tmp_path: Path) -
         hook_text="Cats knead for a reason",
         hook_keyword="knead",
         search_terms=["cat kneading"],
-        beats=["cat kneading"],
+        beats=["cat kneading", "cat paws"],
         mood="warm",
         medical=False,
     )
@@ -205,10 +205,15 @@ def test_pipeline_prepares_media_and_mpt_music_before_paid_tts(tmp_path: Path) -
             return script
 
     class Media:
+        calls = 0
+
         def find(self, terms, *, count, minimum):
-            return [asset]
+            return [asset, asset]
 
         def download(self, selected, directory):
+            self.calls += 1
+            if self.calls == 1:
+                raise RuntimeError("Media download exceeded configured size limit")
             directory.mkdir(parents=True, exist_ok=True)
             selected.local_path = directory / "a.mp4"
             selected.local_path.write_bytes(b"video")
@@ -232,7 +237,8 @@ def test_pipeline_prepares_media_and_mpt_music_before_paid_tts(tmp_path: Path) -
     pipeline.candidate_generator = Candidates()
     pipeline.detector = object()
     pipeline.script_writer = Writer()
-    pipeline.media = Media()
+    media = Media()
+    pipeline.media = media
     pipeline.music = Music()
     pipeline.tts_cache = PaidTTS()
     pipeline.tts = object()
@@ -240,6 +246,7 @@ def test_pipeline_prepares_media_and_mpt_music_before_paid_tts(tmp_path: Path) -
     with pytest.raises(RuntimeError, match="stage 'music'"):
         pipeline.run()
 
+    assert media.calls == 2
     assert pipeline.tts_cache.calls == 0
 
 

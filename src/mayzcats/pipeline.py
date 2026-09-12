@@ -348,8 +348,18 @@ class MayzCatsPipeline:
                         f"[Media 2/2] Downloading asset {index}/{len(assets)} "
                         f"from {asset.provider}..."
                     )
-                    downloaded_assets.append(
-                        self.media.download(asset, checkpoint.directory / "media")
+                    try:
+                        downloaded_assets.append(
+                            self.media.download(asset, checkpoint.directory / "media")
+                        )
+                    except RuntimeError as exc:
+                        if str(exc) != "Media download exceeded configured size limit":
+                            raise
+                        _progress(f"[Media] Skipping oversized asset from {asset.provider}.")
+                if len(downloaded_assets) < minimum_assets:
+                    raise RuntimeError(
+                        f"Only {len(downloaded_assets)} media assets fit the size limit; "
+                        f"at least {minimum_assets} are required"
                     )
                 checkpoint.save_json(
                     "media.json", [asset.to_dict() for asset in downloaded_assets]
