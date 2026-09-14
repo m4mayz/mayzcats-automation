@@ -405,5 +405,16 @@
       "run_id": "f5a8692d-dfbc-40b3-aa48-a9afd9aa07bc",
       "privacy": "public"
     }
+  },
+  {
+    "subject": "Cat coat color genetics",
+    "angle": "How different genes combine to produce common and rare cat coat patterns",
+    "published_at": "2026-09-14T14:14:11.652539+00:00",
+    "youtube_video_id": "ushedY9WejM",
+    "metadata": {
+      "title": "How Genes Paint a Cat’s Coat",
+      "run_id": "38b3f470-9fe8-40c8-abe9-116103da626d",
+      "privacy": "public"
+    }
   }
 ]
