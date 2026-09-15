@@ -38,7 +38,7 @@ jobs:
         with:
           ref: codex/github-actions
           fetch-depth: 0
-      - name: Check five-hour slot
+      - name: Check schedule slot
         id: gate
         env:
           FORCE: ${{ inputs.force }}

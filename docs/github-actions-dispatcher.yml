@@ -1,11 +1,12 @@
-name: MayzCats every five hours
+name: MayzCats daily upload schedule
 on:
   schedule:
-    - cron: "17 * * * *"
+    # 12:00 and 17:00 WIB (UTC+7).
+    - cron: "0 5,10 * * *"
   workflow_dispatch:
     inputs:
       force:
-        description: Run even if current five-hour slot already ran
+        description: Run even if the current schedule slot already ran
         type: boolean
         default: true
       mode:

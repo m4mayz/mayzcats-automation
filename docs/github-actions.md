@@ -4,10 +4,9 @@ Runtime branch: `codex/github-actions`. The only file installed on `main` is
 `.github/workflows/mayzcats-schedule.yml`, copied from
 `docs/github-actions-dispatcher.yml`. It calls the reusable runtime workflow.
 
-The dispatcher wakes at minute 17 hourly. The runner executes at most once per
-five-hour UTC epoch slot, including across midnight (unlike cron `*/5`).
-GitHub can delay or drop scheduled events. This is approximately every five hours,
-not a precise timer. Manual dispatch can force a run.
+The dispatcher runs daily at 12:00 and 17:00 WIB (05:00 and 10:00 UTC).
+GitHub can delay or drop scheduled events, so these times are approximate.
+Manual dispatch can force a run.
 
 ## Repository Secrets
 
