@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import shutil
 import sys
 from contextlib import suppress
@@ -520,8 +521,15 @@ class MayzCatsPipeline:
             if not youtube_video_id:
                 _reject_published_topic(candidate, self.history, self.detector, run_id)
                 checkpoint.begin_stage(stage)
-                _progress(f"[YouTube] Uploading as {privacy.title()}...")
-                youtube_video_id = self.uploader.upload(final_video, post_payload)
+                publish_at = os.environ.get("YOUTUBE_PUBLISH_AT") or None
+                message = f"scheduled for {publish_at}" if publish_at else f"as {privacy.title()}"
+                _progress(f"[YouTube] Uploading {message}...")
+                if publish_at:
+                    youtube_video_id = self.uploader.upload(
+                        final_video, post_payload, publish_at=publish_at
+                    )
+                else:
+                    youtube_video_id = self.uploader.upload(final_video, post_payload)
                 checkpoint.save_json(
                     "upload.json", {"youtube_video_id": youtube_video_id}
                 )
@@ -627,7 +635,11 @@ def retry_failed_upload(drive_root: Path, run_id: str) -> dict[str, Any]:
                     "privacy": entry.metadata.get("privacy", payload.privacy)}
     detector = DuplicateDetector(SentenceTransformerEmbedder(), llm=create_llm(settings))
     _reject_published_topic(candidate, history, detector, run_id)
-    video_id = uploader.upload(package / "final.mp4", payload)
+    publish_at = os.environ.get("YOUTUBE_PUBLISH_AT") or None
+    if publish_at:
+        video_id = uploader.upload(package / "final.mp4", payload, publish_at=publish_at)
+    else:
+        video_id = uploader.upload(package / "final.mp4", payload)
     archive = settings.value("video.archive_dir")
     finalizer = RunFinalizer(
         layout, HistoryStore(layout.topic_history), Path(archive) if archive else None

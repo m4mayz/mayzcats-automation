@@ -50,6 +50,15 @@ def test_youtube_body_supports_configured_private_or_public_privacy() -> None:
         build_video_body(_payload("friends-only"))
 
 
+def test_youtube_body_schedules_public_payload_as_private_until_publish_time() -> None:
+    body = build_video_body(_payload("public"), "2026-09-25T16:00:00Z")
+    assert body["status"] == {
+        "privacyStatus": "private",
+        "selfDeclaredMadeForKids": False,
+        "publishAt": "2026-09-25T16:00:00Z",
+    }
+
+
 def test_success_commits_history_then_removes_local_run(tmp_path: Path) -> None:
     layout = DriveLayout.bootstrap(tmp_path / "drive", _defaults(tmp_path))
     run_dir = tmp_path / "run"

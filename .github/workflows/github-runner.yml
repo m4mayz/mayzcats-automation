@@ -8,6 +8,9 @@ on:
       mode:
         type: string
         default: auto
+      publish_hour_wib:
+        type: string
+        default: ""
   workflow_dispatch:
     inputs:
       force:
@@ -97,9 +100,10 @@ jobs:
           YOUTUBE_CLIENT_SECRET_JSON: ${{ secrets.YOUTUBE_CLIENT_SECRET_JSON }}
           YOUTUBE_TOKEN_JSON: ${{ secrets.YOUTUBE_TOKEN_JSON }}
           MODE: ${{ inputs.mode }}
+          PUBLISH_HOUR_WIB: ${{ inputs.publish_hour_wib }}
         run: |
           .venv/bin/python scripts/github_runner.py prepare
-          .venv/bin/python scripts/github_runner.py run --mode "$MODE"
+          .venv/bin/python scripts/github_runner.py run --mode "$MODE" --publish-hour-wib "$PUBLISH_HOUR_WIB"
       - name: Save runtime for recovery
         if: always() && steps.pipeline.outcome != 'skipped'
         uses: actions/upload-artifact@v4

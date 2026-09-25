@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 import time
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,6 +17,7 @@ STATE = ROOT / "state"
 SCHEDULE = STATE / "actions.json"
 PERIOD = 5 * 60 * 60
 MAX_DUPLICATE_TOPICS = 20
+WIB = timezone(timedelta(hours=7))
 
 
 def read_json(path, default):
@@ -31,6 +33,17 @@ def write_json(path, data):
 
 def due(schedule, now, force=False):
     return force or int(now // PERIOD) > schedule.get("last_slot", -1)
+
+
+def publication_time(hour_wib, now=None):
+    hour = int(hour_wib)
+    if not 0 <= hour <= 23:
+        raise ValueError("Publish hour must be between 0 and 23 WIB")
+    local_now = (now or datetime.now(UTC)).astimezone(WIB)
+    target = local_now.replace(hour=hour, minute=0, second=0, microsecond=0)
+    if target <= local_now:
+        target += timedelta(days=1)
+    return target.astimezone(UTC).isoformat().replace("+00:00", "Z")
 
 
 def gate(force=False):
@@ -72,7 +85,7 @@ def prepare():
     write_json(RUNTIME / "attempt.json", {"slot": int(time.time() // PERIOD)})
 
 
-def run(mode):
+def run(mode, publish_hour_wib=""):
     from mayzcats.youtube_upload import load_credentials
 
     def no_interactive_login(_prompt):
@@ -87,6 +100,11 @@ def run(mode):
     except Exception:
         print("YouTube authorization failed; renew YOUTUBE_TOKEN_JSON.", file=sys.stderr)
         return 1
+    if publish_hour_wib:
+        os.environ["YOUTUBE_PUBLISH_AT"] = publication_time(publish_hour_wib)
+        print(f"[YouTube] Publication scheduled for {os.environ['YOUTUBE_PUBLISH_AT']}")
+    else:
+        os.environ.pop("YOUTUBE_PUBLISH_AT", None)
     mpt = ROOT / "vendor/MoneyPrinterTurbo"
     check = subprocess.run([sys.executable, "-m", "mayzcats.preflight",
                             "--drive-root", str(RUNTIME), "--mpt-root", str(mpt)])
@@ -178,6 +196,7 @@ if __name__ == "__main__":
     parser.add_argument("command", choices=("gate", "prepare", "run", "persist"))
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--mode", choices=("auto", "new"), default="auto")
+    parser.add_argument("--publish-hour-wib", default="")
     args = parser.parse_args()
     if args.command == "gate":
         gate(args.force)
@@ -186,4 +205,4 @@ if __name__ == "__main__":
     elif args.command == "persist":
         persist()
     else:
-        raise SystemExit(run(args.mode))
+        raise SystemExit(run(args.mode, args.publish_hour_wib))

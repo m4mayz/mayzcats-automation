@@ -4,9 +4,9 @@ Runtime branch: `codex/github-actions`. The only file installed on `main` is
 `.github/workflows/mayzcats-schedule.yml`, copied from
 `docs/github-actions-dispatcher.yml`. It calls the reusable runtime workflow.
 
-The dispatcher runs daily at 12:00 and 17:00 WIB (05:00 and 10:00 UTC).
-GitHub can delay or drop scheduled events, so these times are approximate.
-Manual dispatch can force a run.
+The dispatcher starts uploads at 07:00 and 14:00 WIB, then YouTube scheduled
+publishing makes them public at 16:00 and 23:00 WIB. This keeps publication time
+stable even when GitHub delays a scheduled event. Manual dispatch remains immediate.
 
 ## Repository Secrets
 

@@ -1,8 +1,8 @@
 name: MayzCats daily upload schedule
 on:
   schedule:
-    # 12:00 and 17:00 WIB (UTC+7).
-    - cron: "0 5,10 * * *"
+    # Upload early; YouTube publishes at the assigned 16:00/23:00 WIB slot.
+    - cron: "0 0,7 * * *"
   workflow_dispatch:
     inputs:
       force:
@@ -23,4 +23,5 @@ jobs:
     with:
       force: ${{ inputs.force || false }}
       mode: ${{ inputs.mode || 'auto' }}
+      publish_hour_wib: ${{ github.event.schedule == '0 0 * * *' && '16' || github.event.schedule == '0 7 * * *' && '23' || '' }}
     secrets: inherit

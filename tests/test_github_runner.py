@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -22,6 +23,15 @@ def test_five_hour_slots_cross_midnight_and_manual_override():
     assert runner.due({"last_slot": 4}, 25 * 3600)
     assert runner.due({"last_slot": 4}, 24 * 3600, force=True)
     assert runner.due({}, 0)
+
+
+def test_publication_time_uses_next_requested_wib_slot():
+    assert runner.publication_time("16", datetime(2026, 9, 25, 8, tzinfo=UTC)) == (
+        "2026-09-25T09:00:00Z"
+    )
+    assert runner.publication_time("23", datetime(2026, 9, 25, 17, tzinfo=UTC)) == (
+        "2026-09-26T16:00:00Z"
+    )
 
 
 def test_persist_exports_only_public_state_and_tracks_pending_run(tmp_path, monkeypatch):
