@@ -35,6 +35,13 @@ def due(schedule, now, force=False):
     return force or int(now // PERIOD) > schedule.get("last_slot", -1)
 
 
+def is_duplicate_topic_error(error):
+    return any(message in str(error) for message in (
+        "Duplicate topic blocked:",
+        "All generated candidates duplicate previously published topics",
+    ))
+
+
 def publication_time(hour_wib, now=None):
     hour = int(hour_wib)
     if not 0 <= hour <= 23:
@@ -118,7 +125,7 @@ def run(mode, publish_hour_wib=""):
     if pending and mode == "auto":
         checkpoint_dir = RUNTIME / "runs" / pending
         checkpoint = read_json(checkpoint_dir / "state.json", {})
-        if "Duplicate topic blocked:" in str(checkpoint.get("error", "")):
+        if is_duplicate_topic_error(checkpoint.get("error", "")):
             print(f"[Recovery] Abandoning duplicate topic checkpoint {pending}; starting a new run.")
             shutil.rmtree(checkpoint_dir)
             pending = None
@@ -138,7 +145,7 @@ def run(mode, publish_hour_wib=""):
         duplicate = next((
             path.parent for path in (RUNTIME / "runs").glob("*/state.json")
             if (path.parent.name == attempt.get("resume_id") or path.parent.name not in prior)
-            and "Duplicate topic blocked:" in str(read_json(path, {}).get("error", ""))
+            and is_duplicate_topic_error(read_json(path, {}).get("error", ""))
         ), None)
         if duplicate is None:
             return result.returncode

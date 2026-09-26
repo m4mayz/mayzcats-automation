@@ -104,7 +104,7 @@ def test_duplicate_created_during_run_is_abandoned_and_retried_immediately(tmp_p
             runner.write_json(runtime / "runs/duplicate/state.json", {
                 "run_id": "duplicate",
                 "status": "failed",
-                "error": "RuntimeError: Duplicate topic blocked: 'smell' matches 'flehmen'",
+                "error": "RuntimeError: All generated candidates duplicate previously published topics",
             })
             return SimpleNamespace(returncode=1)
         return SimpleNamespace(returncode=0)
