@@ -11,20 +11,21 @@ stable even when GitHub delays a scheduled event. Manual dispatch remains immedi
 ## Repository Secrets
 
 Configure these under Settings -> Secrets and variables -> Actions.
-The active config selects Gemini Interactions:
+The active config uses Groq through the OpenAI-compatible provider:
 
 ```yaml
 llm:
-  provider: gemini
-  model: gemini-3.8-flash
-  api_revision: "2026-05-20"
+  provider: openai
+  model: openai/gpt-oss-120b
 ```
 
-For Gemini, add `GEMINI_API_KEY`; no OPENAI secrets are required.
-For the existing OpenAI-compatible provider, set `llm.provider: openai` and supply:
+For this provider, supply:
 
-- `OPENAI_BASE_URL`
+- `OPENAI_BASE_URL` (for Groq: `https://api.groq.com/openai/v1`)
 - `OPENAI_API_KEY`
+
+To switch to Gemini Interactions instead, set `llm.provider: gemini`, pick a Gemini
+`llm.model`, and add `GEMINI_API_KEY`; no OPENAI secrets are required then.
 
 The model name is not a secret. Set it once as `llm.model` in `config/pipeline.yaml`;
 it applies to whichever provider is selected. Both API key secrets accept a
@@ -65,8 +66,8 @@ the workflow uses GITHUB_TOKEN with contents:write and actions:read.
 This public repository also has public state and downloadable artifacts. Only
 selected publication fields enter Git; source bodies and local paths are omitted.
 The 21 supplied publication entries seed the topic history; keep them to avoid
-regenerating old topics. Config currently retains the previous private upload
-default: change youtube.privacy in config/pipeline.yaml to public when desired.
+regenerating old topics. Config currently uploads with youtube.privacy: public;
+change it to private in config/pipeline.yaml to hold uploads for review.
 
 Each attempt restores the previous artifact and saves a new snapshot (90-day
 retention). Artifacts consume GitHub storage quota; caches/videos accumulate in the

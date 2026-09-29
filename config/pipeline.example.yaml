@@ -1,6 +1,6 @@
 llm:
     provider: openai # Set gemini to use the Interactions API with GEMINI_API_KEY.
-    model: gemini-3.8-flash
+    model: openai/gpt-oss-120b
     api_revision: "2026-05-20"
 
 topic:
