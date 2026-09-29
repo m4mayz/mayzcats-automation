@@ -22,7 +22,7 @@ from mayzcats.models import (
     WordTiming,
 )
 from mayzcats.pipeline import MayzCatsPipeline, RunFinalizer, parse_args, retry_failed_upload
-from mayzcats.storage import DriveLayout
+from mayzcats.storage import RuntimeLayout
 from mayzcats.youtube_upload import build_video_body
 
 
@@ -60,7 +60,7 @@ def test_youtube_body_schedules_public_payload_as_private_until_publish_time() -
 
 
 def test_success_commits_history_then_removes_local_run(tmp_path: Path) -> None:
-    layout = DriveLayout.bootstrap(tmp_path / "drive", _defaults(tmp_path))
+    layout = RuntimeLayout.bootstrap(tmp_path / "runtime", _defaults(tmp_path))
     run_dir = tmp_path / "run"
     run_dir.mkdir()
     (run_dir / "final.mp4").write_bytes(b"video")
@@ -109,7 +109,7 @@ def test_success_marks_topic_used_before_writing_secondary_run_log(tmp_path: Pat
 
 
 def test_upload_failure_writes_complete_reusable_package_without_history(tmp_path: Path) -> None:
-    layout = DriveLayout.bootstrap(tmp_path / "drive", _defaults(tmp_path))
+    layout = RuntimeLayout.bootstrap(tmp_path / "runtime", _defaults(tmp_path))
     run_dir = tmp_path / "run"
     run_dir.mkdir()
     final = run_dir / "final.mp4"
@@ -142,7 +142,7 @@ def test_upload_failure_writes_complete_reusable_package_without_history(tmp_pat
 
 
 def test_pipeline_skips_oversize_media_before_paid_tts(tmp_path: Path) -> None:
-    layout = DriveLayout.bootstrap(tmp_path / "drive", _defaults(tmp_path))
+    layout = RuntimeLayout.bootstrap(tmp_path / "runtime", _defaults(tmp_path))
 
     class Settings:
         secrets: dict[str, str] = {}
@@ -267,7 +267,7 @@ def test_pipeline_skips_oversize_media_before_paid_tts(tmp_path: Path) -> None:
 def test_pipeline_resume_reuses_paid_tts_and_optionally_rerenders_video(
     tmp_path: Path, force_rerender: bool, expected_render_calls: int, already_published: bool
 ) -> None:
-    layout = DriveLayout.bootstrap(tmp_path / "drive", _defaults(tmp_path))
+    layout = RuntimeLayout.bootstrap(tmp_path / "runtime", _defaults(tmp_path))
     checkpoint = RunCheckpoint.create(layout, "resume-run")
     candidate = Candidate("Cat paws", "why cats knead", "evergreen")
     brief = ResearchBrief(
@@ -420,15 +420,22 @@ def test_pipeline_resume_reuses_paid_tts_and_optionally_rerenders_video(
 
 
 def test_cli_accepts_rerender_for_a_resumed_run() -> None:
-    args = parse_args(["--resume", "run-123", "--rerender"])
+    args = parse_args(
+        ["--runtime-root", "rt", "--mpt-root", "mpt", "--resume", "run-123", "--rerender"]
+    )
 
     assert args.resume == "run-123"
     assert args.rerender is True
 
 
+def test_cli_requires_runtime_and_mpt_roots() -> None:
+    with pytest.raises(SystemExit):
+        parse_args(["--resume", "run-123"])
+
+
 @pytest.mark.parametrize("same_run", [False, True])
 def test_upload_only_retry_blocks_used_family_or_returns_existing_upload(tmp_path, monkeypatch, same_run):
-    layout = DriveLayout.bootstrap(tmp_path / "drive", _defaults(tmp_path))
+    layout = RuntimeLayout.bootstrap(tmp_path / "runtime", _defaults(tmp_path))
     package = layout.failed_dir / "retry-run"
     package.mkdir()
     (package / "post_payload.json").write_text(json.dumps(_payload().to_dict()))

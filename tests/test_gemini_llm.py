@@ -7,7 +7,7 @@ import pytest
 
 from mayzcats.config import Settings, required_secrets
 from mayzcats.llm import GeminiInteractionsClient, OpenAICompatibleClient, create_llm
-from mayzcats.storage import DriveLayout
+from mayzcats.storage import RuntimeLayout
 
 
 @pytest.mark.parametrize("shape", ["steps", "outputs"])
@@ -65,7 +65,7 @@ def test_gemini_http_rejection_is_not_parsed_as_content():
 def test_selected_provider_controls_environment_secrets_and_factory(tmp_path, monkeypatch):
     from pathlib import Path
 
-    layout = DriveLayout.bootstrap(tmp_path, Path(__file__).resolve().parents[1] / "config")
+    layout = RuntimeLayout.bootstrap(tmp_path, Path(__file__).resolve().parents[1] / "config")
     layout.pipeline_config.write_text("llm:\n  provider: gemini\n  model: gemini-3.8-flash\n")
     monkeypatch.setenv("GEMINI_API_KEY", "test-key")
     settings = Settings.load(layout)

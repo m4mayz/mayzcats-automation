@@ -9,20 +9,20 @@ from typing import Any
 
 from .config import Settings, required_secrets
 from .music_fetcher import REPO_MUSIC_DIR
-from .storage import DriveLayout
+from .storage import RuntimeLayout
 
 
 def check_environment(
-    drive_root: Path,
+    runtime_root: Path,
     mpt_root: Path,
     *,
     project_root: Path | None = None,
 ) -> dict[str, Any]:
     project_root = project_root or Path(__file__).resolve().parents[2]
-    layout = DriveLayout.bootstrap(drive_root, project_root / "config")
+    layout = RuntimeLayout.bootstrap(runtime_root, project_root / "config")
     settings = Settings.load(layout, mpt_root=mpt_root)
     checks: dict[str, Any] = {
-        "drive_root": layout.root.is_dir(),
+        "runtime_root": layout.root.is_dir(),
         "ffmpeg": shutil.which("ffmpeg") is not None,
         "ffprobe": shutil.which("ffprobe") is not None,
         "uv": shutil.which("uv") is not None,
@@ -45,7 +45,7 @@ def check_environment(
     checks["ok"] = all(
         bool(checks[name])
         for name in (
-            "drive_root",
+            "runtime_root",
             "ffmpeg",
             "ffprobe",
             "uv",
@@ -60,23 +60,15 @@ def check_environment(
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Validate MayzCats Colab prerequisites")
-    parser.add_argument(
-        "--drive-root",
-        type=Path,
-        default=Path("/content/drive/MyDrive/MayzCats-Automation"),
-    )
-    parser.add_argument(
-        "--mpt-root",
-        type=Path,
-        default=Path("/content/mayzcats-project/vendor/MoneyPrinterTurbo"),
-    )
+    parser = argparse.ArgumentParser(description="Validate MayzCats runtime prerequisites")
+    parser.add_argument("--runtime-root", type=Path, required=True)
+    parser.add_argument("--mpt-root", type=Path, required=True)
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    checks = check_environment(args.drive_root, args.mpt_root)
+    checks = check_environment(args.runtime_root, args.mpt_root)
     print(json.dumps(checks, ensure_ascii=False, indent=2))
     return 0 if checks["ok"] else 1
 

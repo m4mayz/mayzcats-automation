@@ -9,7 +9,7 @@ from types import SimpleNamespace
 from mayzcats.history import HistoryStore
 from mayzcats.models import Candidate
 from mayzcats.pipeline import RunFinalizer
-from mayzcats.storage import DriveLayout
+from mayzcats.storage import RuntimeLayout
 
 spec = importlib.util.spec_from_file_location(
     "github_runner", Path(__file__).resolve().parents[1] / "scripts/github_runner.py"
@@ -118,7 +118,7 @@ def test_duplicate_created_during_run_is_abandoned_and_retried_immediately(tmp_p
 
 def test_success_archives_video_before_cleanup(tmp_path):
     defaults = Path(__file__).resolve().parents[1] / "config"
-    layout = DriveLayout.bootstrap(tmp_path / "runtime", defaults)
+    layout = RuntimeLayout.bootstrap(tmp_path / "runtime", defaults)
     work = tmp_path / "render"
     work.mkdir()
     (work / "final.mp4").write_bytes(b"finished video")

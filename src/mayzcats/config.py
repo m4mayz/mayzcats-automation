@@ -8,7 +8,7 @@ from typing import Any
 import yaml
 from dotenv import dotenv_values
 
-from .storage import DriveLayout
+from .storage import RuntimeLayout
 
 # The model name lives in config/pipeline.yaml (llm.model) for every provider.
 PIPELINE_SECRETS = (
@@ -34,7 +34,7 @@ def required_secrets(pipeline: dict[str, Any]) -> tuple[str, ...]:
 
 @dataclass(slots=True)
 class Settings:
-    layout: DriveLayout
+    layout: RuntimeLayout
     channel: dict[str, Any]
     pipeline: dict[str, Any]
     secrets: dict[str, str]
@@ -44,11 +44,13 @@ class Settings:
     @classmethod
     def load(
         cls,
-        layout: DriveLayout,
+        layout: RuntimeLayout,
         *,
-        work_root: Path = Path("/content/mayzcats/runs"),
-        mpt_root: Path = Path("/content/mayzcats-project/vendor/MoneyPrinterTurbo"),
+        work_root: Path | None = None,
+        mpt_root: Path | None = None,
     ) -> Settings:
+        work_root = work_root or layout.root / "work"
+        mpt_root = mpt_root or Path(__file__).resolve().parents[2] / "vendor" / "MoneyPrinterTurbo"
         channel = _read_yaml(layout.channel_config)
         pipeline = _read_yaml(layout.pipeline_config)
         file_values = {key: value or "" for key, value in dotenv_values(layout.env_file).items()}

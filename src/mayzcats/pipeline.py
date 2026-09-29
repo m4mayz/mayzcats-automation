@@ -32,7 +32,7 @@ from .music_fetcher import REPO_MUSIC_DIR, MPTMusicLibrary
 from .research import Researcher, TavilyClient
 from .scene_planner import plan_scenes
 from .script_writer import ScriptWriter
-from .storage import DriveLayout
+from .storage import RuntimeLayout
 from .tts_cache import PersistentTTSCache
 from .video_engine import MPTAdapter, VideoEngine
 from .youtube_upload import YoutubeUploader, payload_from_file
@@ -53,7 +53,7 @@ def redact(text: str, secrets: list[str]) -> str:
 
 class RunFinalizer:
     def __init__(
-        self, layout: DriveLayout, history: HistoryStore, archive_dir: Path | None = None
+        self, layout: RuntimeLayout, history: HistoryStore, archive_dir: Path | None = None
     ) -> None:
         self.layout = layout
         self.history = history
@@ -366,7 +366,7 @@ class MayzCatsPipeline:
                     "media.json", [asset.to_dict() for asset in downloaded_assets]
                 )
                 checkpoint.complete_stage(stage)
-                _progress(f"[Media] {len(downloaded_assets)} assets cached in Drive")
+                _progress(f"[Media] {len(downloaded_assets)} assets cached")
 
             stage = "music"
             music: MusicTrack | None = None
@@ -416,7 +416,7 @@ class MayzCatsPipeline:
                     else:
                         _progress(
                             f"[TTS] ElevenLabs key #{narration.key_index}: "
-                            f"{narration.duration:.1f}s; saved to Drive cache"
+                            f"{narration.duration:.1f}s; saved to TTS cache"
                         )
                     if minimum <= narration.duration <= maximum:
                         break
@@ -607,17 +607,17 @@ def _configure_logging(path: Path) -> None:
     LOGGER.addHandler(stream)
 
 
-def build_settings(drive_root: Path, mpt_root: Path, work_root: Path) -> Settings:
+def build_settings(runtime_root: Path, mpt_root: Path, work_root: Path | None) -> Settings:
     project_root = Path(__file__).resolve().parents[2]
-    layout = DriveLayout.bootstrap(drive_root, project_root / "config")
+    layout = RuntimeLayout.bootstrap(runtime_root, project_root / "config")
     settings = Settings.load(layout, work_root=work_root, mpt_root=mpt_root)
     settings.require_secrets(*required_secrets(settings.pipeline))
     return settings
 
 
-def retry_failed_upload(drive_root: Path, run_id: str) -> dict[str, Any]:
+def retry_failed_upload(runtime_root: Path, run_id: str) -> dict[str, Any]:
     project_root = Path(__file__).resolve().parents[2]
-    layout = DriveLayout.bootstrap(drive_root, project_root / "config")
+    layout = RuntimeLayout.bootstrap(runtime_root, project_root / "config")
     package = layout.failed_dir / run_id
     if not package.is_dir():
         raise FileNotFoundError(f"Failed-upload package not found: {package}")
@@ -677,17 +677,9 @@ def _reject_published_topic(candidate, history, detector, run_id: str) -> None:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run MayzCats V1")
-    parser.add_argument(
-        "--drive-root",
-        type=Path,
-        default=Path("/content/drive/MyDrive/MayzCats-Automation"),
-    )
-    parser.add_argument(
-        "--mpt-root",
-        type=Path,
-        default=Path("/content/mayzcats-project/vendor/MoneyPrinterTurbo"),
-    )
-    parser.add_argument("--work-root", type=Path, default=Path("/content/mayzcats/runs"))
+    parser.add_argument("--runtime-root", type=Path, required=True)
+    parser.add_argument("--mpt-root", type=Path, required=True)
+    parser.add_argument("--work-root", type=Path)
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--resume", metavar="RUN_ID")
     mode.add_argument("--resume-latest", action="store_true")
@@ -706,9 +698,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     if args.retry_upload:
-        result = retry_failed_upload(args.drive_root, args.retry_upload)
+        result = retry_failed_upload(args.runtime_root, args.retry_upload)
     else:
-        settings = build_settings(args.drive_root, args.mpt_root, args.work_root)
+        settings = build_settings(args.runtime_root, args.mpt_root, args.work_root)
         resume_id = args.resume
         if args.resume_latest:
             resume_id = latest_failed_run(settings.layout)

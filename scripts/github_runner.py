@@ -65,7 +65,7 @@ def prepare():
     import yaml
 
     from mayzcats.config import required_secrets
-    from mayzcats.storage import DriveLayout
+    from mayzcats.storage import RuntimeLayout
 
     config = yaml.safe_load((ROOT / "config/pipeline.yaml").read_text(encoding="utf-8"))
     missing = [key for key in (*required_secrets(config), "YOUTUBE_CLIENT_SECRET_JSON", "YOUTUBE_TOKEN_JSON")
@@ -81,7 +81,7 @@ def prepare():
             raise ValueError("Missing refresh token")
     except (ValueError, AttributeError):
         raise ValueError("Invalid YouTube JSON secrets; token must include a refresh_token") from None
-    layout = DriveLayout.bootstrap(RUNTIME, ROOT / "config")
+    layout = RuntimeLayout.bootstrap(RUNTIME, ROOT / "config")
     for name in ("channel.yaml", "pipeline.yaml"):
         shutil.copyfile(ROOT / "config" / name, layout.config_dir / name)
     shutil.copyfile(STATE / "topic_history.json", layout.topic_history)
@@ -114,11 +114,11 @@ def run(mode, publish_hour_wib=""):
         os.environ.pop("YOUTUBE_PUBLISH_AT", None)
     mpt = ROOT / "vendor/MoneyPrinterTurbo"
     check = subprocess.run([sys.executable, "-m", "mayzcats.preflight",
-                            "--drive-root", str(RUNTIME), "--mpt-root", str(mpt)])
+                            "--runtime-root", str(RUNTIME), "--mpt-root", str(mpt)])
     if check.returncode:
         return check.returncode
     base_command = [sys.executable, "-u", "-m", "mayzcats.pipeline",
-                    "--drive-root", str(RUNTIME), "--mpt-root", str(mpt),
+                    "--runtime-root", str(RUNTIME), "--mpt-root", str(mpt),
                     "--work-root", str(ROOT / ".render")]
     command = [*base_command]
     pending = read_json(SCHEDULE, {}).get("pending_run")
