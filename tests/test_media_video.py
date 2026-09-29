@@ -105,6 +105,19 @@ def test_scene_planner_is_adaptive_and_covers_narration_exactly() -> None:
     assert 1.0 <= durations[0] <= 2.0
 
 
+def test_scene_planner_interleaves_other_clips_before_reusing_a_short_video() -> None:
+    assets = [_asset("a"), _asset("b"), _asset("c")]
+    for asset in assets:
+        asset.duration = 2.0
+
+    scenes = plan_scenes(duration=8.0, beats=["one long beat"], assets=assets)
+    ids = [scene.asset.asset_id for scene in scenes]
+
+    assert ids == ["a", "b", "c", "a"]
+    assert all(left != right for left, right in zip(ids, ids[1:], strict=False))
+    assert scenes[-1].end == 8.0
+
+
 def test_mpt_music_library_copies_a_bundled_track_with_source_trace(tmp_path: Path) -> None:
     songs = tmp_path / "music"
     songs.mkdir(parents=True)

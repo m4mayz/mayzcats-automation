@@ -1,0 +1,728 @@
+[
+  {
+    "subject": "Feline slow blink communication",
+    "angle": "How narrowing eyelids functions as a non-threatening trust signal across species",
+    "published_at": "2026-09-03T11:25:12.631621+07:00",
+    "youtube_video_id": "8my6qbtooVA",
+    "metadata": {
+      "title": "Why Cats Slow-Blink at Humans",
+      "run_id": "5021c36a-dbcf-4e93-979f-1a6a352fa4de",
+      "privacy": "private"
+    }
+  },
+  {
+    "subject": "Whisker Proprioception",
+    "angle": "How vibrissae follicle nerve endings allow cats to navigate spatial gaps without visual confirmation",
+    "published_at": "2026-09-03T13:17:46.522648+07:00",
+    "youtube_video_id": "nXMbohWvH8A",
+    "metadata": {
+      "title": "How Cat Whiskers Measure Tight Spaces",
+      "run_id": "cf4196e5-052c-4f07-9650-91d3f7026d14",
+      "privacy": "private"
+    }
+  },
+  {
+    "subject": "The feline slow blink",
+    "angle": "The physiological and social function of the slow blink as a non-threatening communication signal between cats and humans.",
+    "published_at": "2026-09-03T13:50:02.717867+07:00",
+    "youtube_video_id": "wAfsarC4Ycw",
+    "metadata": {
+      "title": "The Secret Meaning Behind Your Cat's Slow Blink",
+      "run_id": "095ec35e-f22b-41f5-a0c7-96c249de9685",
+      "privacy": "private"
+    }
+  },
+  {
+    "subject": "The Flehmen response",
+    "angle": "How the vomeronasal organ processes non-volatile pheromones through an open-mouth grimace.",
+    "published_at": "2026-09-03T14:29:27.825973+07:00",
+    "youtube_video_id": "7ViiNMaxkSU",
+    "metadata": {
+      "title": "Why Cats Make That Open-Mouth Grimace: The Flehmen Response",
+      "run_id": "c86d0f6c-cdc5-4ce8-8635-7ade2d3836da",
+      "privacy": "private"
+    }
+  },
+  {
+    "subject": "Cat slow blink communication",
+    "angle": "How narrowing eyes functions as the feline equivalent of a smile to signal trust",
+    "published_at": "2026-09-03T16:26:04.884074+07:00",
+    "youtube_video_id": "Hp3wqbECoRU",
+    "metadata": {
+      "title": "Why Cats Smile With Their Eyes",
+      "run_id": "e1cda9a1-2b3c-465f-aa34-32a46b25c5de",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat Purring Physiology",
+    "angle": "How laryngeal oscillations produce low-frequency vibrations that promote self-soothing and tissue regeneration.",
+    "published_at": "2026-09-04T10:11:14.248644+07:00",
+    "youtube_video_id": "aGhjxQlH-xg",
+    "metadata": {
+      "title": "Why Do Cats Purr? The Healing Science",
+      "run_id": "af94499c-c0f8-4d37-ab3d-5a128c8e5ed0",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Whisker Fatigue",
+    "angle": "How deep food bowls overstimulate sensory receptors at the base of whiskers",
+    "published_at": "2026-09-04T11:16:51.163312+07:00",
+    "youtube_video_id": "28eOSH2yzIs",
+    "metadata": {
+      "title": "Why Deep Food Bowls Bother Your Cat",
+      "run_id": "73b210a0-beec-4ccf-9e22-a79ca63e2443",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "The Mechanics of Cat Purring",
+    "angle": "How do cats physically produce purr frequencies, and why do they purr during both calm and stressful situations?",
+    "published_at": "2026-09-04T13:20:06.274978+07:00",
+    "youtube_video_id": "AABOXq8PW98",
+    "metadata": {
+      "title": "The Secret Mechanics of Cat Purring",
+      "run_id": "56badd69-ad3f-42e3-b220-cb77a94fe2ab",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat Whisker Anatomy",
+    "angle": "How proprioceptors at the base of vibrissae map spatial dimensions and navigate tight gaps",
+    "published_at": "2026-09-04T15:17:57.483815+07:00",
+    "youtube_video_id": "ugmtgbLJMmU",
+    "metadata": {
+      "title": "How Cat Whiskers Measure Tight Spaces",
+      "run_id": "26538301-4cd8-4c39-9293-2f8a5c92e9de",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Feline Whisker Mechanics",
+    "angle": "How proprioceptors at the base of whiskers navigate tight spaces in zero light",
+    "published_at": "2026-09-04T22:48:12.652123+07:00",
+    "youtube_video_id": "Pj2BMyvq448",
+    "metadata": {
+      "title": "The Hidden Superpower of Cat Whiskers",
+      "run_id": "bb8162ee-7a0d-4916-8ddf-2c2b71f1d66b",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Feline whisker spatial awareness",
+    "angle": "How whiskers function as tactile navigation sensors to detect narrow openings and air currents",
+    "published_at": "2026-09-05T13:27:14.207452+07:00",
+    "youtube_video_id": "N5W-zLugjJE",
+    "metadata": {
+      "title": "How Cats Use Whiskers to Navigate the Dark",
+      "run_id": "ceae471a-1ec6-4629-ac46-51b8728acf59",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Feline purr anatomy and biomechanics",
+    "angle": "How the neural oscillator drives rhythmic laryngeal muscle contractions to produce purring",
+    "published_at": "2026-09-05T21:36:53.530082+07:00",
+    "youtube_video_id": "B9pDUnRY20Q",
+    "metadata": {
+      "title": "How Cats Purr: The Brain's Rhythm Engine",
+      "run_id": "0b5b9787-bd85-45f8-9943-eef8559960bb",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Feline Whisker Function and Navigation",
+    "angle": "How whiskers function as tactile sensory organs to measure narrow spaces and detect subtle air currents.",
+    "published_at": "2026-09-05T22:19:58.393212+07:00",
+    "youtube_video_id": "_51fxvU2y4A",
+    "metadata": {
+      "title": "How Cat Whiskers Measure the World",
+      "run_id": "11537f4c-bcde-461d-b092-57db007258b2",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat Righting Reflex",
+    "angle": "How the feline vestibular system and flexible spine allow mid-air rotation without defying conservation of angular momentum.",
+    "published_at": "2026-09-05T22:50:01.192038+07:00",
+    "youtube_video_id": "oYpCv55fkvY",
+    "metadata": {
+      "title": "How Cats Twist Mid-Air to Land on Their Feet",
+      "run_id": "1b22a82b-3a7f-4914-8ae3-fe47554c2223",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Whisker Fatigue and Bowl Anatomy",
+    "angle": "Why deep, narrow bowls trigger sensory overload through feline whisker nerve clusters.",
+    "published_at": "2026-09-06T12:13:49.405824+07:00",
+    "youtube_video_id": "M_D3pZRHdJY",
+    "metadata": {
+      "title": "Why Cats Might Hate Deep Food Bowls",
+      "run_id": "eb422cf7-f071-4484-a87c-aa92b99b4c22",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Whisker fatigue in domestic cats",
+    "angle": "How high-sided food bowls overstimulate sensory receptors in feline vibrissae",
+    "published_at": "2026-09-06T14:22:11.158347+07:00",
+    "youtube_video_id": "iwmq8MBi784",
+    "metadata": {
+      "title": "Why Do Cats Hesitate at High-Sided Food Bowls?",
+      "run_id": "94e68e9f-ff74-42d1-8b12-6280b4de08f6",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Feline Whiskers (Vibrissae)",
+    "angle": "How tactile hairs navigate narrow spaces and detect micro air currents",
+    "published_at": "2026-09-07T22:07:45.575321+07:00",
+    "youtube_video_id": "Z-lExtGZUiA",
+    "metadata": {
+      "title": "How Cats Use Their Whiskers to Navigate",
+      "run_id": "0cec8718-340c-4693-89ae-47b6b384d5c0",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Why cats knock objects off edges",
+    "angle": "How paw tactile exploration and predatory instinct drive cats to test object motion and sound",
+    "published_at": "2026-09-08T01:12:18.754603+07:00",
+    "youtube_video_id": "EkprtEEXPiw",
+    "metadata": {
+      "title": "Why Do Cats Knock Things Off Edges?",
+      "run_id": "4a406648-e943-4ea4-a9d8-850819560d56",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Slow-blink communication",
+    "angle": "How the feline slow blink functions as an active signal of safety and reassurance.",
+    "published_at": "2026-09-08T12:28:30.693786+07:00",
+    "youtube_video_id": "dTiEqQEc_L8",
+    "metadata": {
+      "title": "Why Cats Slow Blink at You",
+      "run_id": "9cf0cc2e-b7b5-4f7a-b60a-034894fee1aa",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "The slow blink response",
+    "angle": "How slow-blinking functions as a cross-species emotional signal of safety and positive intent",
+    "published_at": "2026-09-08T14:53:35.290526+07:00",
+    "youtube_video_id": "ktv3B3XUfNI",
+    "metadata": {
+      "title": "The Secret Meaning Behind Cat Slow Blinks",
+      "run_id": "826dc9f2-9bc8-41ac-9e9f-8e0d6a6bafb5",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Slow Blinking Communication",
+    "angle": "How slow blinking functions as a positive emotional signal across domestic cats and humans.",
+    "published_at": "2026-09-09T16:27:15.597589+07:00",
+    "youtube_video_id": "uTxqn1d9aW8",
+    "metadata": {
+      "title": "The Secret Meaning Behind Your Cat's Slow Blink",
+      "run_id": "072a53ba-03fc-42ae-9893-415a70deab4d",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat tail communication",
+    "angle": "How different tail positions convey emotions and intentions in domestic cats",
+    "published_at": "2026-09-09T17:39:31.563956+00:00",
+    "youtube_video_id": "u4bV1sdZ6zg",
+    "metadata": {
+      "title": "What Your Cat's Tail Is Saying: Decode the Signals",
+      "run_id": "74064b85-f474-48d4-9db1-2dea646fe487",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat Sleep Patterns",
+    "angle": "How many hours do domestic cats sleep and why?",
+    "published_at": "2026-09-09T22:40:09.796772+00:00",
+    "youtube_video_id": "2-mugNzCWcc",
+    "metadata": {
+      "title": "Why Do Cats Sleep So Much?",
+      "run_id": "28e5b026-98d3-4f42-b0a9-1575020daf02",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Essential Nutrition for Domestic Cats",
+    "angle": "Key nutrients cats need at each life stage and common dietary pitfalls",
+    "published_at": "2026-09-10T06:06:58.359075+00:00",
+    "youtube_video_id": "tk9Q3AaXN-U",
+    "metadata": {
+      "title": "Essential Nutrition for Cats: Feeding Every Life Stage",
+      "run_id": "2f94ad86-9365-4e2c-8c77-f85ffb7c0272",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat ear positions and what they mean",
+    "angle": "Decode cat emotions by interpreting ear orientation and movement",
+    "published_at": "2026-09-10T11:29:21.434523+00:00",
+    "youtube_video_id": "zKwfVBrTIR8",
+    "metadata": {
+      "title": "Decoding Cat Ears: What Their Positions Reveal",
+      "run_id": "e00073ad-b5c8-414e-80a8-5f2495987d0c",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Understanding Cat Meows: What Different Sounds Mean",
+    "angle": "What are the common types of cat vocalizations and their typical meanings?",
+    "published_at": "2026-09-10T16:32:54.601836+00:00",
+    "youtube_video_id": "jUtj57TE9K4",
+    "metadata": {
+      "title": "What Do Cat Meows Mean?",
+      "run_id": "34a134d4-47f2-43e5-b470-5c1344cd9f96",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cats in Ancient Civilizations",
+    "angle": "Exploring the roles cats played in societies like Egypt, Greece, and Rome and how those roles shaped human‑cat relationships today",
+    "published_at": "2026-09-12T08:42:46.722046+00:00",
+    "youtube_video_id": "cL8wWi2CNsE",
+    "metadata": {
+      "title": "How Ancient Cats Became Today's Beloved Companions",
+      "run_id": "ef932916-bc18-4ebf-ab22-d38ee54dd8c0",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "How cats use scent marking to communicate",
+    "angle": "The biology and purpose of feline scent marks in the home and outdoors",
+    "published_at": "2026-09-12T10:16:40.778317+00:00",
+    "youtube_video_id": "Wiq1QNsg0ak",
+    "metadata": {
+      "title": "How Cats Use Scent to Talk to Us",
+      "run_id": "2307eeb3-b849-40f9-81d0-1f5646e7c614",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat Night Vision: How Felines See in Low Light",
+    "angle": "The biology behind cats' ability to see in near darkness",
+    "published_at": "2026-09-12T14:15:58.413751+00:00",
+    "youtube_video_id": "9hoYFJI4--A",
+    "metadata": {
+      "title": "Cat Night Vision: How Felines See in Low Light",
+      "run_id": "c5b2dc69-a602-4a09-ad81-056022f7dc09",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "The Science of Cat Play: Why Cats Chase and Pounce",
+    "angle": "Explain the evolutionary and neurological reasons behind play behavior and how to provide safe outlets",
+    "published_at": "2026-09-12T19:31:16.676502+00:00",
+    "youtube_video_id": "UmDc1OwrCDg",
+    "metadata": {
+      "title": "Why Cats Chase: The Science Behind Play",
+      "run_id": "f23b5732-4ede-4d93-abd0-a19fcc30f493",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Why Cats Love Boxes",
+    "angle": "Investigate the psychological and sensory reasons behind cats’ fascination with cardboard boxes.",
+    "published_at": "2026-09-13T01:09:58.099948+00:00",
+    "youtube_video_id": "yP0Dqd6S0Ug",
+    "metadata": {
+      "title": "Why Cats Love Boxes",
+      "run_id": "1cac190d-a8d6-40b2-8364-5d1c261ebd1a",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cats and Human Health: Benefits of Living with Felines",
+    "angle": "Ways cats improve mental well‑being, stress reduction, and social connection",
+    "published_at": "2026-09-13T06:19:03.777505+00:00",
+    "youtube_video_id": "j4B62nq4KDM",
+    "metadata": {
+      "title": "How Cats Boost Your Mood and Reduce Stress",
+      "run_id": "1abd5863-035a-441e-a6b7-d5aedfd24c76",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat Scratching: Why It Happens and How to Provide Safe Outlets",
+    "angle": "Explains the instinctual reasons behind scratching and offers practical tips for cat‑friendly alternatives",
+    "published_at": "2026-09-13T12:04:31.170560+00:00",
+    "youtube_video_id": "bOffExFurkM",
+    "metadata": {
+      "title": "Why Cats Scratch & How to Give Them Safe Outlets",
+      "run_id": "02ef3d66-f3f2-47cb-a339-b4753b9be683",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Why cats knead and what it means",
+    "angle": "The origins and functions of the rhythmic paw‑pressing motion",
+    "published_at": "2026-09-13T16:26:03.506384+00:00",
+    "youtube_video_id": "DTbnxTb5VyY",
+    "metadata": {
+      "title": "Why Cats Knead: From Kitten Milk to Cozy Comfort",
+      "run_id": "d95af272-d64e-4f12-8d35-dfccd791c37c",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat grooming habits",
+    "angle": "Why cats groom, benefits for coat health and stress reduction",
+    "published_at": "2026-09-13T19:35:05.066416+00:00",
+    "youtube_video_id": "Z-edFU6gcG4",
+    "metadata": {
+      "title": "The Surprising Benefits of Cat Grooming",
+      "run_id": "5789f329-8eb8-47f0-8e32-6d13b47725ea",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Dental health importance for cats",
+    "angle": "Outline common dental issues, preventive care like brushing and diet, and why oral health affects overall wellbeing",
+    "published_at": "2026-09-14T01:15:38.498849+00:00",
+    "youtube_video_id": "dMMz3rVw_Pc",
+    "metadata": {
+      "title": "Why Cat Dental Health Matters: Simple Care, Big Benefits",
+      "run_id": "8b0f4ab3-e741-46ac-9baf-bc100352b56e",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Common Myths About Cat Adoption Debunked",
+    "angle": "Address misconceptions such as age, temperament, and health concerns.",
+    "published_at": "2026-09-14T06:26:24.656772+00:00",
+    "youtube_video_id": "I8Kqm0iliPI",
+    "metadata": {
+      "title": "Common Myths About Cat Adoption Debunked",
+      "run_id": "f5a8692d-dfbc-40b3-aa48-a9afd9aa07bc",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat coat color genetics",
+    "angle": "How different genes combine to produce common and rare cat coat patterns",
+    "published_at": "2026-09-14T14:14:11.652539+00:00",
+    "youtube_video_id": "ushedY9WejM",
+    "metadata": {
+      "title": "How Genes Paint a Cat’s Coat",
+      "run_id": "38b3f470-9fe8-40c8-abe9-116103da626d",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Social hierarchy in multi‑cat households",
+    "angle": "What determines rank and how owners can support harmony",
+    "published_at": "2026-09-14T19:31:40.070447+00:00",
+    "youtube_video_id": "fsfEm16ThqM",
+    "metadata": {
+      "title": "Understanding Cat Hierarchy and Keeping the Peace",
+      "run_id": "bf53797d-d91f-45c8-96ef-2966cc08daf2",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat body temperature regulation: how cats stay cool and warm",
+    "angle": "Explain the physiological ways cats manage heat and cold, including paw pads, fur insulation, and behavior",
+    "published_at": "2026-09-14T23:16:18.694394+00:00",
+    "youtube_video_id": "EBCGT0TNtRU",
+    "metadata": {
+      "title": "How Cats Keep Their Cool (and Warm) – The Science Behind Feline Thermoregulation",
+      "run_id": "79e7a6dc-a89b-4dcb-bd45-c315f9669c30",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Favorite Sleeping Spots",
+    "angle": "Why cats choose certain spots to nap and how to create ideal sleeping areas at home",
+    "published_at": "2026-09-15T01:36:04.389271+00:00",
+    "youtube_video_id": "aV5kTbMi390",
+    "metadata": {
+      "title": "Why Cats Pick Their Sleeping Spots (And How to Make the Perfect Nap Zone)",
+      "run_id": "d03912f1-f573-4ea9-8037-5729b1d4bccc",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Why Cats Bring ‘Gifts’ to Their Owners",
+    "angle": "Exploring the hunting instinct and social sharing that leads cats to present prey or toys to people",
+    "published_at": "2026-09-15T09:51:01.506667+00:00",
+    "youtube_video_id": "W8KKpZkLExs",
+    "metadata": {
+      "title": "Why Cats Bring \"Gifts\" to Their Owners",
+      "run_id": "a9c6a55e-9684-49cf-b7fa-b21742a4a5c7",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "The Evolution of Cat Toys",
+    "angle": "From simple strings to high-tech interactive gadgets, how cat toys have changed over the decades",
+    "published_at": "2026-09-15T14:42:05.942828+00:00",
+    "youtube_video_id": "EVDViY7-ddM",
+    "metadata": {
+      "title": "From Strings to Smart Gadgets: The Evolution of Cat Toys",
+      "run_id": "028d26d1-72d6-4252-86d4-ae2535fdfc20",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Origins of popular cat breeds",
+    "angle": "Historical development and geographic roots of breeds like Siamese, Maine Coon, and Bengal",
+    "published_at": "2026-09-16T09:44:03.171951+00:00",
+    "youtube_video_id": "QLEFAID0JXk",
+    "metadata": {
+      "title": "The Surprising Origins of Siamese, Maine Coon, and Bengal Cats",
+      "run_id": "178a8169-ec80-4268-a1cb-30cf97194a94",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat Socialization: Helping Kittens Adjust to New Homes",
+    "angle": "Step‑by‑step techniques to build confidence and reduce fear in newly adopted kittens",
+    "published_at": "2026-09-16T14:40:23.349851+00:00",
+    "youtube_video_id": "oOXJrsHLA6I",
+    "metadata": {
+      "title": "Step‑by‑Step Kitten Socialization: Build Confidence in Your New Cat",
+      "run_id": "aacb8a4e-3b25-416c-94af-a2144a394733",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "How Cats Adapt to Multi‑Pet Households",
+    "angle": "Offers strategies for harmonious coexistence among cats, dogs, and other pets",
+    "published_at": "2026-09-17T14:42:53.778496+00:00",
+    "youtube_video_id": "7TDGqq93RXo",
+    "metadata": {
+      "title": "How to Help Cats Thrive with Dogs and Other Pets",
+      "run_id": "cc5b8554-8899-4f9d-8cd9-cdff2090e7ee",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cats' Hearing Superpowers: Frequency Range and Everyday Sounds",
+    "angle": "Detailing the range of frequencies cats can hear and how common household noises affect them",
+    "published_at": "2026-09-18T09:24:53.943295+00:00",
+    "youtube_video_id": "9c8e9Yb1jo0",
+    "metadata": {
+      "title": "Cats Hear 85 kHz – Why Everyday Noises Startle Them",
+      "run_id": "4d1e5a43-8e74-499d-81d6-1d2314365603",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Common Household Hazards for Cats and How to Prevent Them",
+    "angle": "Identify everyday items (plants, cords, cleaners) that pose risks and suggest safe alternatives.",
+    "published_at": "2026-09-18T14:06:54.918659+00:00",
+    "youtube_video_id": "Fw9Eoy-KjWA",
+    "metadata": {
+      "title": "Hidden Household Hazards Every Cat Owner Should Know",
+      "run_id": "d8ca537d-39e7-4c1f-942f-2f4b95037c49",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Choosing and maintaining a cat litter box",
+    "angle": "Best practices for litter type, placement, and cleaning frequency",
+    "published_at": "2026-09-19T09:15:12.768166+00:00",
+    "youtube_video_id": "Jtq_9Hb6rxE",
+    "metadata": {
+      "title": "Cat Litter Box Basics: Types, Placement, and Cleaning",
+      "run_id": "3c2b15d8-daca-4780-af9f-ac3c3727bd2d",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "The Role of Cats in Reducing Household Pests",
+    "angle": "Explore how domestic cats naturally control rodents and insects, and the limits of this benefit",
+    "published_at": "2026-09-19T13:44:33.787819+00:00",
+    "youtube_video_id": "toIJUicQ2wI",
+    "metadata": {
+      "title": "Do Cats Really Keep Pests Away? The Truth Behind Feline Pest Control",
+      "run_id": "c0e80f83-9439-4473-83de-f678fbad422a",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Understanding Cat Posture: What Standing, Crouching, and Stretching Mean",
+    "angle": "Explain common cat body positions and the emotions or intentions they convey to owners.",
+    "published_at": "2026-09-20T09:39:17.220225+00:00",
+    "youtube_video_id": "4wcOnm7fVLQ",
+    "metadata": {
+      "title": "What Your Cat's Posture Reveals: Comfort, Fear, and Play",
+      "run_id": "34753f3f-1390-4348-bcea-5df818c80535",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat Hydration",
+    "angle": "Practical ways to encourage cats to drink more water and stay hydrated",
+    "published_at": "2026-09-20T13:59:01.964560+00:00",
+    "youtube_video_id": "-ATRKmZjJtY",
+    "metadata": {
+      "title": "Simple Ways to Keep Your Cat Hydrated",
+      "run_id": "2916ab3e-dcf8-4292-9622-689c50f5ad7d",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "The Science of Cat Curiosity: Why Cats Explore Everything",
+    "angle": "Evolutionary reasons behind cats' investigative behavior",
+    "published_at": "2026-09-21T10:27:44.206587+00:00",
+    "youtube_video_id": "9WFG0XR83cs",
+    "metadata": {
+      "title": "The Science of Cat Curiosity: Why Cats Explore Everything",
+      "run_id": "1253afa8-ed58-4bd9-b08e-00e4fa9e2483",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cats and time perception: do they know when you’ll return?",
+    "angle": "Scientific insights into feline circadian rhythms and routine awareness",
+    "published_at": "2026-09-22T09:41:01.405223+00:00",
+    "youtube_video_id": "PdkeDV6e9_o",
+    "metadata": {
+      "title": "Do Cats Know When You'll Return?",
+      "run_id": "eab71ac4-3c43-4eb5-8443-82cbf2936e77",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "The science behind cats loving high places",
+    "angle": "Explore why cats seek elevated spots, covering safety instincts, territorial advantage, and temperature regulation",
+    "published_at": "2026-09-22T14:22:54.043190+00:00",
+    "youtube_video_id": "3f9iosZbxOI",
+    "metadata": {
+      "title": "Why Cats Seek High Places",
+      "run_id": "1fd0f8c5-32f9-47fd-ae28-7a80480617c4",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "How Cats Age: Stages from Kitten to Senior",
+    "angle": "Describing physical and behavioral changes at each life stage and how owners can adapt care.",
+    "published_at": "2026-09-23T09:48:22.268442+00:00",
+    "youtube_video_id": "ZXOlSarny-Q",
+    "metadata": {
+      "title": "Cat Aging Stages: From Playful Kitten to Graceful Senior",
+      "run_id": "39e96c83-5d1e-47b0-9b9f-080c4e2ba22e",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Recognizing cat anxiety signs and environmental fixes",
+    "angle": "Identify behavioral indicators of anxiety in cats and suggest non‑medical environmental adjustments to help them feel secure",
+    "published_at": "2026-09-23T14:43:08.202673+00:00",
+    "youtube_video_id": "GrMfjSV_kfc",
+    "metadata": {
+      "title": "Spotting Cat Anxiety & Simple Home Fixes",
+      "run_id": "a6ffaf48-f9e7-4b71-94dc-20de7348f1e8",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Indoor vs Outdoor Living for Cats",
+    "angle": "Comparing health, safety, and wellbeing of indoor-only cats versus those with outdoor access",
+    "published_at": "2026-09-24T09:45:36.937828+00:00",
+    "youtube_video_id": "fFf07pDBd50",
+    "metadata": {
+      "title": "Indoor vs Outdoor Cats: Health, Safety & Happiness",
+      "run_id": "2d8eeafa-72ee-4468-8fd4-5411c0626f89",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "The physics of a cat’s high‑jump",
+    "angle": "Why felines can leap up to six times their body length and the muscles involved",
+    "published_at": "2026-09-24T14:39:55.325871+00:00",
+    "youtube_video_id": "UXwUQbOL0IE",
+    "metadata": {
+      "title": "Why Cats Can Jump Six Times Their Length",
+      "run_id": "456a5c07-a2fb-4e48-bb39-e988edd2f589",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "The science of a cat’s ‘zoomies’",
+    "angle": "Break down why cats suddenly sprint around the house and what it tells us about their energy needs",
+    "published_at": "2026-09-25T10:05:38.374160+00:00",
+    "youtube_video_id": "Z-jQnSy2lqg",
+    "metadata": {
+      "title": "Why Cats Get the Zoomies: The Science Behind FRAPs",
+      "run_id": "a494504c-7be9-4a81-b48e-c0595b9033a6",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "The Evolution of Domestic Cats from Wild Ancestors",
+    "angle": "Tracing the genetic and behavioral changes that turned solitary hunters into human companions",
+    "published_at": "2026-09-26T04:07:11.450011+00:00",
+    "youtube_video_id": "kDdeQV26JPo",
+    "metadata": {
+      "title": "From African Wildcats to Our Cozy House Cats",
+      "run_id": "590f1505-3467-4d62-8df9-a6cdb9964fd0",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat Cognitive Skills: Problem Solving and Learning",
+    "angle": "Scientific experiments that reveal cats can solve puzzles, learn tricks, and adapt to new challenges",
+    "published_at": "2026-09-27T02:10:44.907584+00:00",
+    "youtube_video_id": "wzC08HumSW8",
+    "metadata": {
+      "title": "Cat Puzzle Solvers: How Felines Learn and Adapt",
+      "run_id": "ae03c89d-8826-41a2-81ef-4b73945170ef",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat Claw Mechanics: Structure, Function, and Care",
+    "angle": "Detail the anatomy of retractable claws and best practices for nail health",
+    "published_at": "2026-09-27T12:53:21.901160+00:00",
+    "youtube_video_id": "PFzfY0ZvvU4",
+    "metadata": {
+      "title": "Cat Claw Mechanics & Care",
+      "run_id": "f2703929-ca60-42fc-a021-3a7dd4254fe8",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Choosing the Right Cat Tree: Size, Materials, and Placement",
+    "angle": "Guidelines for selecting a cat tree that matches your cat’s size, activity level, and home décor",
+    "published_at": "2026-09-28T02:16:20.318845+00:00",
+    "youtube_video_id": "Aub7_ar9oIM",
+    "metadata": {
+      "title": "How to Pick the Perfect Cat Tree for Any Feline",
+      "run_id": "b624d40f-67b5-441b-b00f-7ea89989ec19",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Catnip Sensitivity Variations",
+    "angle": "Why do some cats react strongly to catnip while others show no interest?",
+    "published_at": "2026-09-28T15:06:56.801350+00:00",
+    "youtube_video_id": "ivrI91uFzrM",
+    "metadata": {
+      "title": "Why Some Cats Love Catnip and Others Don’t",
+      "run_id": "e25b107d-aab3-43ca-8db6-cdae6e67caf7",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat Adoption Process: Steps for New Cat Parents",
+    "angle": "A step‑by‑step guide covering preparation, paperwork, home setup, and first weeks after adoption",
+    "published_at": "2026-09-29T03:03:26.093432+00:00",
+    "youtube_video_id": "rHzGiAok5w4",
+    "metadata": {
+      "title": "Step‑by‑Step Guide to a Smooth Cat Adoption",
+      "run_id": "37f32add-4a64-470a-bc8a-18294ed9ef1c",
+      "privacy": "public"
+    }
+  }
+]

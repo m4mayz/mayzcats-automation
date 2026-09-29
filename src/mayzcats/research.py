@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 
 import httpx
 
+from .llm import as_list
 from .models import Candidate, ResearchBrief, SourceTrace
 from .network import post_with_retries
 
@@ -37,6 +38,11 @@ def validate_source_numbers(values: list[Any], *, source_count: int, minimum: in
     if len(numbers) < min(minimum, source_count):
         raise InsufficientResearchError("Fact validation requires two distinct source numbers")
     return numbers
+
+
+# Tavily "advanced" depth returns multi-KB bodies; both prompt builders below clip to
+# this so a wide result set cannot blow past a provider's request size limit.
+EXCERPT_CHARS = 500
 
 
 def normalize_sources(raw_results: list[dict[str, Any]], *, minimum: int = 3) -> list[SourceTrace]:
@@ -150,7 +156,8 @@ class Researcher:
         if not results:
             return ""
         return "\n".join(
-            f"- {item.get('title', '')}: {item.get('content', '')[:500]} ({item.get('url', '')})"
+            f"- {item.get('title', '')}: {item.get('content', '')[:EXCERPT_CHARS]} "
+            f"({item.get('url', '')})"
             for item in results[: self.max_results]
         )
 
@@ -170,7 +177,8 @@ class Researcher:
             f"Normalized {len(sources)} distinct sources"
         )
         evidence = "\n\n".join(
-            f"SOURCE {index}: {source.title}\nURL: {source.url}\nEXCERPT: {source.content}"
+            f"SOURCE {index}: {source.title}\nURL: {source.url}\n"
+            f"EXCERPT: {source.content[:EXCERPT_CHARS]}"
             for index, source in enumerate(sources, start=1)
         )
         self.progress(
@@ -186,13 +194,14 @@ Return {{"summary":"...","claims":["..."],"source_numbers":[1,2],
 "medical":false}}. Every claim must be supported by at least one numbered source
 and the brief must use at least two distinct sources. Keep source traces internal.""",
         )
-        claims = [str(item).strip() for item in response.get("claims", []) if str(item).strip()]
+        claims = [str(item).strip() for item in as_list(response.get("claims"))
+                  if str(item).strip()]
         summary = str(response.get("summary", "")).strip()
         medical = bool(response.get("medical", False))
         if not claims or not summary:
             raise InsufficientResearchError("Fact checker returned no supported claims")
         validate_source_numbers(
-            list(response.get("source_numbers") or []), source_count=len(sources)
+            as_list(response.get("source_numbers")), source_count=len(sources)
         )
         return ResearchBrief(
             summary=summary,

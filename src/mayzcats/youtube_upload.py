@@ -17,7 +17,7 @@ RETRIABLE_STATUS_CODES = {500, 502, 503, 504}
 SUPPORTED_PRIVACY_STATUSES = {"private", "public"}
 
 
-def build_video_body(payload: PostPayload) -> dict[str, Any]:
+def build_video_body(payload: PostPayload, publish_at: str | None = None) -> dict[str, Any]:
     if payload.privacy not in SUPPORTED_PRIVACY_STATUSES:
         raise ValueError(
             "YouTube privacy must be one of: " + ", ".join(sorted(SUPPORTED_PRIVACY_STATUSES))
@@ -34,8 +34,9 @@ def build_video_body(payload: PostPayload) -> dict[str, Any]:
             "categoryId": "15",
         },
         "status": {
-            "privacyStatus": payload.privacy,
+            "privacyStatus": "private" if publish_at else payload.privacy,
             "selfDeclaredMadeForKids": False,
+            **({"publishAt": publish_at} if publish_at else {}),
         },
     }
 
@@ -111,11 +112,13 @@ class YoutubeUploader:
             self.service = build("youtube", "v3", credentials=credentials, cache_discovery=False)
         return self.service
 
-    def upload(self, video_path: Path, payload: PostPayload) -> str:
+    def upload(
+        self, video_path: Path, payload: PostPayload, *, publish_at: str | None = None
+    ) -> str:
         from googleapiclient.errors import HttpError
         from googleapiclient.http import MediaFileUpload
 
-        body = build_video_body(payload)
+        body = build_video_body(payload, publish_at)
         media = MediaFileUpload(
             str(video_path), chunksize=self.chunk_size, resumable=True, mimetype="video/mp4"
         )

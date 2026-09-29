@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from .models import HistoryEntry
-from .storage import DriveLayout
+from .storage import RuntimeLayout
 
 
 class HistoryStore:
@@ -31,7 +31,7 @@ class HistoryStore:
         entries = self.all()
         if not any(item.youtube_video_id == entry.youtube_video_id for item in entries):
             entries.append(entry)
-        DriveLayout.atomic_json(self.path, [item.to_dict() for item in entries])
+        RuntimeLayout.atomic_json(self.path, [item.to_dict() for item in entries])
 
     def record_failed_run(self) -> None:
         """Deliberately leave topic history unchanged for a failed run."""

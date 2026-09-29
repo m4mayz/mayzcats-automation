@@ -8,22 +8,33 @@ from typing import Any
 import yaml
 from dotenv import dotenv_values
 
-from .storage import DriveLayout
+from .storage import RuntimeLayout
 
-REQUIRED_SECRETS = (
-    "OPENAI_BASE_URL",
-    "OPENAI_API_KEY",
-    "OPENAI_MODEL",
+# The model name lives in config/pipeline.yaml (llm.model) for every provider.
+PIPELINE_SECRETS = (
     "ELEVENLABS_API_KEYS",
     "PEXELS_API_KEY",
     "PIXABAY_API_KEY",
     "TAVILY_API_KEY",
 )
+REQUIRED_SECRETS = ("OPENAI_BASE_URL", "OPENAI_API_KEY", *PIPELINE_SECRETS)
+
+
+def llm_secrets(provider: str) -> tuple[str, ...]:
+    if provider == "gemini":
+        return ("GEMINI_API_KEY",)
+    if provider == "openai":
+        return ("OPENAI_BASE_URL", "OPENAI_API_KEY")
+    raise ValueError(f"Unsupported llm.provider: {provider}")
+
+
+def required_secrets(pipeline: dict[str, Any]) -> tuple[str, ...]:
+    return llm_secrets(str(pipeline.get("llm", {}).get("provider", "openai"))) + PIPELINE_SECRETS
 
 
 @dataclass(slots=True)
 class Settings:
-    layout: DriveLayout
+    layout: RuntimeLayout
     channel: dict[str, Any]
     pipeline: dict[str, Any]
     secrets: dict[str, str]
@@ -33,17 +44,19 @@ class Settings:
     @classmethod
     def load(
         cls,
-        layout: DriveLayout,
+        layout: RuntimeLayout,
         *,
-        work_root: Path = Path("/content/mayzcats/runs"),
-        mpt_root: Path = Path("/content/mayzcats-project/vendor/MoneyPrinterTurbo"),
+        work_root: Path | None = None,
+        mpt_root: Path | None = None,
     ) -> Settings:
+        work_root = work_root or layout.root / "work"
+        mpt_root = mpt_root or Path(__file__).resolve().parents[2] / "vendor" / "MoneyPrinterTurbo"
         channel = _read_yaml(layout.channel_config)
         pipeline = _read_yaml(layout.pipeline_config)
         file_values = {key: value or "" for key, value in dotenv_values(layout.env_file).items()}
         secrets = {
             key: os.environ.get(key, file_values.get(key, ""))
-            for key in set(file_values) | set(REQUIRED_SECRETS)
+            for key in set(file_values) | set(REQUIRED_SECRETS) | {"GEMINI_API_KEY"}
         }
         return cls(layout, channel, pipeline, secrets, Path(work_root), Path(mpt_root))
 

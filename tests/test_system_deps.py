@@ -3,10 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
-from mayzcats.colab_bootstrap import MONTSERRAT_URL, ensure_system_dependencies
+from mayzcats.system_deps import MONTSERRAT_URL, ensure_system_dependencies
 
 
-def test_colab_bootstrap_installs_ffmpeg_separately_and_downloads_montserrat(
+def test_system_deps_installs_ffmpeg_separately_and_downloads_montserrat(
     tmp_path: Path,
 ) -> None:
     commands: list[list[str]] = []

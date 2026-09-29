@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from .storage import DriveLayout
+from .storage import RuntimeLayout
 
 
 def _now() -> str:
@@ -14,7 +14,7 @@ def _now() -> str:
 
 
 class RunCheckpoint:
-    def __init__(self, layout: DriveLayout, run_id: str, state: dict[str, Any]) -> None:
+    def __init__(self, layout: RuntimeLayout, run_id: str, state: dict[str, Any]) -> None:
         self.layout = layout
         self.run_id = run_id
         self.directory = layout.runs_dir / run_id
@@ -22,7 +22,7 @@ class RunCheckpoint:
         self.state = state
 
     @classmethod
-    def create(cls, layout: DriveLayout, run_id: str) -> RunCheckpoint:
+    def create(cls, layout: RuntimeLayout, run_id: str) -> RunCheckpoint:
         directory = layout.runs_dir / run_id
         directory.mkdir(parents=True, exist_ok=False)
         now = _now()
@@ -43,7 +43,7 @@ class RunCheckpoint:
         return checkpoint
 
     @classmethod
-    def open(cls, layout: DriveLayout, run_id: str) -> RunCheckpoint:
+    def open(cls, layout: RuntimeLayout, run_id: str) -> RunCheckpoint:
         directory = layout.runs_dir / run_id
         state_path = directory / "state.json"
         if not state_path.is_file():
@@ -105,7 +105,7 @@ class RunCheckpoint:
         self.layout.atomic_json(self.state_path, self.state)
 
 
-def latest_failed_run(layout: DriveLayout) -> str | None:
+def latest_failed_run(layout: RuntimeLayout) -> str | None:
     candidates: list[tuple[str, str]] = []
     for state_path in layout.runs_dir.glob("*/state.json"):
         try:

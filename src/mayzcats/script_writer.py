@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any, Protocol
 
+from .llm import as_list, as_text
 from .models import Candidate, ResearchBrief, ScriptPackage
 
 STATIC_TAGS = ["cats", "cat lovers", "pets", "cute animals"]
@@ -10,6 +11,13 @@ FORBIDDEN_CLICKBAIT = (
     "you won't believe",
     "this will shock you",
     "shocking truth",
+)
+# The writer prompt names the structure, so models sometimes echo those names back as
+# headings inside the narration. Nothing here is meant to be spoken.
+SECTION_LABEL = re.compile(
+    r"^[\s*#>\-]*(?:hook|context|main explanation|explanation|body|surprising detail|"
+    r"closing question|closing|intro|outro)\s*[:\-–—]\s*",
+    re.IGNORECASE | re.MULTILINE,
 )
 
 
@@ -28,7 +36,9 @@ class ScriptWriter:
 context, main explanation, surprising detail, closing question. Target about 45
 seconds. Keep it family-friendly, warm, curious, slightly playful, and free of
 cheap clickbait. Playful personification must read as humor rather than fact.
-Use only supplied claims. Return JSON only.""",
+Use only supplied claims. Return JSON only. script is one spoken paragraph: no
+section names, headings or labels, because every character of it is read aloud.
+hashtags, tags, search_terms and beats must be JSON arrays, never one string.""",
             f"""Subject: {candidate.subject}\nAngle: {candidate.angle}\nSupported claims:\n{evidence}
 Medical: {brief.medical}\nReturn keys script,
 title, description, hashtags, tags, hook_text, hook_keyword, search_terms, beats,
@@ -58,9 +68,9 @@ package:\n{package.to_dict()}""",
 
 
 def package_from_response(data: dict[str, Any], *, medical: bool) -> ScriptPackage:
-    script = str(data.get("script", "")).strip()
-    title = _clean_text(str(data.get("title", "")).strip())[:100]
-    description = _clean_text(str(data.get("description", "")).strip())
+    script = SECTION_LABEL.sub("", as_text(data.get("script"))).strip()
+    title = _clean_text(SECTION_LABEL.sub("", as_text(data.get("title"))).strip())[:100]
+    description = _clean_text(SECTION_LABEL.sub("", as_text(data.get("description"))).strip())
     if not script or not title or not description:
         raise ValueError("Script response is missing script, title, or description")
     lowered = f"{title} {script}".lower()
@@ -68,7 +78,8 @@ def package_from_response(data: dict[str, Any], *, medical: bool) -> ScriptPacka
         raise ValueError("Script response contains forbidden clickbait wording")
 
     hashtags = []
-    for value in ["#shorts", *data.get("hashtags", [])]:
+    # Hashtags are single tokens, so a string answer splits on spaces too.
+    for value in ["#shorts", *as_list(data.get("hashtags"), separator=r"[\s,]+")]:
         tag = "#" + re.sub(r"[^A-Za-z0-9_]", "", str(value).lstrip("#"))
         if tag != "#" and tag.lower() not in {item.lower() for item in hashtags}:
             hashtags.append(tag)
@@ -77,18 +88,20 @@ def package_from_response(data: dict[str, Any], *, medical: bool) -> ScriptPacka
         hashtags.extend(tag for tag in ["#cats", "#catfacts"] if tag not in hashtags)
 
     tags = []
-    for value in [*STATIC_TAGS, *data.get("tags", [])]:
+    for value in [*STATIC_TAGS, *as_list(data.get("tags"))]:
         tag = _clean_text(str(value).strip()).lower()
         if tag and tag not in tags:
             tags.append(tag)
-    hook_text = _clean_text(str(data.get("hook_text", "")).strip())
-    hook_keyword = _clean_text(str(data.get("hook_keyword", "")).strip())
+    hook_text = _clean_text(SECTION_LABEL.sub("", as_text(data.get("hook_text"))).strip())
+    hook_keyword = _clean_text(as_text(data.get("hook_keyword")).strip())
     if not hook_text or not hook_keyword or hook_keyword.lower() not in hook_text.lower():
         raise ValueError("hook_keyword must occur in hook_text")
 
-    beats = [_clean_text(str(item).strip()) for item in data.get("beats", []) if str(item).strip()]
+    beats = [_clean_text(str(item).strip()) for item in as_list(data.get("beats"))
+             if str(item).strip()]
     search_terms = [
-        _clean_text(str(item).strip()) for item in data.get("search_terms", []) if str(item).strip()
+        _clean_text(str(item).strip()) for item in as_list(data.get("search_terms"))
+        if str(item).strip()
     ]
     if not beats or not search_terms:
         raise ValueError("Script response requires beats and search_terms")
@@ -102,7 +115,7 @@ def package_from_response(data: dict[str, Any], *, medical: bool) -> ScriptPacka
         hook_keyword=hook_keyword,
         search_terms=search_terms[:8],
         beats=beats[:12],
-        mood=_clean_text(str(data.get("mood", "warm playful")).strip()),
+        mood=_clean_text(as_text(data.get("mood") or "warm playful").strip()),
         medical=medical,
     )
 

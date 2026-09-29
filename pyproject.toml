@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mayzcats"
 version = "1.0.0"
-description = "Colab-ready YouTube Shorts automation for MayzCats"
+description = "GitHub Actions YouTube Shorts automation for MayzCats"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"

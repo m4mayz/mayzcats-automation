@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from mayzcats.checkpoint import RunCheckpoint, latest_failed_run
-from mayzcats.storage import DriveLayout
+from mayzcats.storage import RuntimeLayout
 
 
 def _defaults(tmp_path: Path) -> Path:
@@ -16,7 +16,7 @@ def _defaults(tmp_path: Path) -> Path:
 
 
 def test_checkpoint_persists_stage_artifacts_and_can_be_resumed(tmp_path: Path) -> None:
-    layout = DriveLayout.bootstrap(tmp_path / "drive", _defaults(tmp_path))
+    layout = RuntimeLayout.bootstrap(tmp_path / "runtime", _defaults(tmp_path))
     checkpoint = RunCheckpoint.create(layout, "run-1")
 
     checkpoint.save_json("script.json", {"script": "Cats knead blankets."})
@@ -33,7 +33,7 @@ def test_checkpoint_persists_stage_artifacts_and_can_be_resumed(tmp_path: Path) 
 
 
 def test_latest_failed_run_ignores_successful_checkpoints(tmp_path: Path) -> None:
-    layout = DriveLayout.bootstrap(tmp_path / "drive", _defaults(tmp_path))
+    layout = RuntimeLayout.bootstrap(tmp_path / "runtime", _defaults(tmp_path))
     failed = RunCheckpoint.create(layout, "failed-run")
     failed.fail("render", "ffmpeg failed")
     successful = RunCheckpoint.create(layout, "successful-run")

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import shutil
 import sys
 from contextlib import suppress
@@ -12,11 +13,11 @@ from typing import Any
 from uuid import uuid4
 
 from .checkpoint import RunCheckpoint, latest_failed_run
-from .config import REQUIRED_SECRETS, Settings
+from .config import Settings, required_secrets
 from .dedup import DuplicateDetector, SentenceTransformerEmbedder
 from .elevenlabs_tts import ElevenLabsClient
 from .history import HistoryStore
-from .llm import OpenAICompatibleClient
+from .llm import create_llm
 from .media_fetcher import MediaFetcher, PexelsProvider, PixabayProvider
 from .models import (
     Candidate,
@@ -31,7 +32,7 @@ from .music_fetcher import REPO_MUSIC_DIR, MPTMusicLibrary
 from .research import Researcher, TavilyClient
 from .scene_planner import plan_scenes
 from .script_writer import ScriptWriter
-from .storage import DriveLayout
+from .storage import RuntimeLayout
 from .tts_cache import PersistentTTSCache
 from .video_engine import MPTAdapter, VideoEngine
 from .youtube_upload import YoutubeUploader, payload_from_file
@@ -51,9 +52,12 @@ def redact(text: str, secrets: list[str]) -> str:
 
 
 class RunFinalizer:
-    def __init__(self, layout: DriveLayout, history: HistoryStore) -> None:
+    def __init__(
+        self, layout: RuntimeLayout, history: HistoryStore, archive_dir: Path | None = None
+    ) -> None:
         self.layout = layout
         self.history = history
+        self.archive_dir = archive_dir
 
     def success(
         self,
@@ -93,6 +97,10 @@ class RunFinalizer:
         self.layout.append_run(complete)
         if checkpoint is not None:
             checkpoint.finish(youtube_video_id)
+        if self.archive_dir is not None:
+            source = (checkpoint.directory if checkpoint is not None else run_dir) / "final.mp4"
+            self.archive_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, self.archive_dir / f"{run_id}.mp4")
         if Path(run_dir).exists():
             shutil.rmtree(run_dir)
         if checkpoint is not None:
@@ -143,14 +151,7 @@ class MayzCatsPipeline:
         self.settings = settings
         self.history = HistoryStore(settings.layout.topic_history)
         network_attempts = int(settings.value("network.max_attempts", 3))
-        llm = OpenAICompatibleClient(
-            settings.secrets["OPENAI_BASE_URL"],
-            settings.secrets["OPENAI_API_KEY"],
-            settings.secrets["OPENAI_MODEL"],
-            timeout=float(settings.value("network.llm_read_timeout_seconds", 180)),
-            max_attempts=network_attempts,
-            progress=_progress,
-        )
+        llm = create_llm(settings, progress=_progress)
         self.researcher = Researcher(
             TavilyClient(
                 settings.secrets["TAVILY_API_KEY"],
@@ -206,7 +207,10 @@ class MayzCatsPipeline:
             chunk_size=int(settings.value("youtube.chunk_size_bytes", 8 * 1024 * 1024)),
             max_retries=int(settings.value("youtube.max_retries", 5)),
         )
-        self.finalizer = RunFinalizer(settings.layout, self.history)
+        archive = settings.value("video.archive_dir")
+        self.finalizer = RunFinalizer(
+            settings.layout, self.history, Path(archive) if archive else None
+        )
 
     def run(
         self,
@@ -345,14 +349,24 @@ class MayzCatsPipeline:
                         f"[Media 2/2] Downloading asset {index}/{len(assets)} "
                         f"from {asset.provider}..."
                     )
-                    downloaded_assets.append(
-                        self.media.download(asset, checkpoint.directory / "media")
+                    try:
+                        downloaded_assets.append(
+                            self.media.download(asset, checkpoint.directory / "media")
+                        )
+                    except RuntimeError as exc:
+                        if str(exc) != "Media download exceeded configured size limit":
+                            raise
+                        _progress(f"[Media] Skipping oversized asset from {asset.provider}.")
+                if len(downloaded_assets) < minimum_assets:
+                    raise RuntimeError(
+                        f"Only {len(downloaded_assets)} media assets fit the size limit; "
+                        f"at least {minimum_assets} are required"
                     )
                 checkpoint.save_json(
                     "media.json", [asset.to_dict() for asset in downloaded_assets]
                 )
                 checkpoint.complete_stage(stage)
-                _progress(f"[Media] {len(downloaded_assets)} assets cached in Drive")
+                _progress(f"[Media] {len(downloaded_assets)} assets cached")
 
             stage = "music"
             music: MusicTrack | None = None
@@ -402,7 +416,7 @@ class MayzCatsPipeline:
                     else:
                         _progress(
                             f"[TTS] ElevenLabs key #{narration.key_index}: "
-                            f"{narration.duration:.1f}s; saved to Drive cache"
+                            f"{narration.duration:.1f}s; saved to TTS cache"
                         )
                     if minimum <= narration.duration <= maximum:
                         break
@@ -507,8 +521,15 @@ class MayzCatsPipeline:
             if not youtube_video_id:
                 _reject_published_topic(candidate, self.history, self.detector, run_id)
                 checkpoint.begin_stage(stage)
-                _progress(f"[YouTube] Uploading as {privacy.title()}...")
-                youtube_video_id = self.uploader.upload(final_video, post_payload)
+                publish_at = os.environ.get("YOUTUBE_PUBLISH_AT") or None
+                message = f"scheduled for {publish_at}" if publish_at else f"as {privacy.title()}"
+                _progress(f"[YouTube] Uploading {message}...")
+                if publish_at:
+                    youtube_video_id = self.uploader.upload(
+                        final_video, post_payload, publish_at=publish_at
+                    )
+                else:
+                    youtube_video_id = self.uploader.upload(final_video, post_payload)
                 checkpoint.save_json(
                     "upload.json", {"youtube_video_id": youtube_video_id}
                 )
@@ -586,17 +607,17 @@ def _configure_logging(path: Path) -> None:
     LOGGER.addHandler(stream)
 
 
-def build_settings(drive_root: Path, mpt_root: Path, work_root: Path) -> Settings:
+def build_settings(runtime_root: Path, mpt_root: Path, work_root: Path | None) -> Settings:
     project_root = Path(__file__).resolve().parents[2]
-    layout = DriveLayout.bootstrap(drive_root, project_root / "config")
+    layout = RuntimeLayout.bootstrap(runtime_root, project_root / "config")
     settings = Settings.load(layout, work_root=work_root, mpt_root=mpt_root)
-    settings.require_secrets(*REQUIRED_SECRETS)
+    settings.require_secrets(*required_secrets(settings.pipeline))
     return settings
 
 
-def retry_failed_upload(drive_root: Path, run_id: str) -> dict[str, Any]:
+def retry_failed_upload(runtime_root: Path, run_id: str) -> dict[str, Any]:
     project_root = Path(__file__).resolve().parents[2]
-    layout = DriveLayout.bootstrap(drive_root, project_root / "config")
+    layout = RuntimeLayout.bootstrap(runtime_root, project_root / "config")
     package = layout.failed_dir / run_id
     if not package.is_dir():
         raise FileNotFoundError(f"Failed-upload package not found: {package}")
@@ -612,14 +633,17 @@ def retry_failed_upload(drive_root: Path, run_id: str) -> dict[str, Any]:
         if entry.metadata.get("run_id") == run_id:
             return {"run_id": run_id, "youtube_video_id": entry.youtube_video_id,
                     "privacy": entry.metadata.get("privacy", payload.privacy)}
-    settings.require_secrets("OPENAI_BASE_URL", "OPENAI_API_KEY", "OPENAI_MODEL")
-    detector = DuplicateDetector(SentenceTransformerEmbedder(), llm=OpenAICompatibleClient(
-        settings.secrets["OPENAI_BASE_URL"], settings.secrets["OPENAI_API_KEY"],
-        settings.secrets["OPENAI_MODEL"],
-    ))
+    detector = DuplicateDetector(SentenceTransformerEmbedder(), llm=create_llm(settings))
     _reject_published_topic(candidate, history, detector, run_id)
-    video_id = uploader.upload(package / "final.mp4", payload)
-    finalizer = RunFinalizer(layout, HistoryStore(layout.topic_history))
+    publish_at = os.environ.get("YOUTUBE_PUBLISH_AT") or None
+    if publish_at:
+        video_id = uploader.upload(package / "final.mp4", payload, publish_at=publish_at)
+    else:
+        video_id = uploader.upload(package / "final.mp4", payload)
+    archive = settings.value("video.archive_dir")
+    finalizer = RunFinalizer(
+        layout, HistoryStore(layout.topic_history), Path(archive) if archive else None
+    )
     temporary_run = settings.work_root / f"retry-{run_id}"
     temporary_run.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(package / "final.mp4", temporary_run / "final.mp4")
@@ -653,17 +677,9 @@ def _reject_published_topic(candidate, history, detector, run_id: str) -> None:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run MayzCats V1")
-    parser.add_argument(
-        "--drive-root",
-        type=Path,
-        default=Path("/content/drive/MyDrive/MayzCats-Automation"),
-    )
-    parser.add_argument(
-        "--mpt-root",
-        type=Path,
-        default=Path("/content/mayzcats-project/vendor/MoneyPrinterTurbo"),
-    )
-    parser.add_argument("--work-root", type=Path, default=Path("/content/mayzcats/runs"))
+    parser.add_argument("--runtime-root", type=Path, required=True)
+    parser.add_argument("--mpt-root", type=Path, required=True)
+    parser.add_argument("--work-root", type=Path)
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--resume", metavar="RUN_ID")
     mode.add_argument("--resume-latest", action="store_true")
@@ -682,9 +698,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     if args.retry_upload:
-        result = retry_failed_upload(args.drive_root, args.retry_upload)
+        result = retry_failed_upload(args.runtime_root, args.retry_upload)
     else:
-        settings = build_settings(args.drive_root, args.mpt_root, args.work_root)
+        settings = build_settings(args.runtime_root, args.mpt_root, args.work_root)
         resume_id = args.resume
         if args.resume_latest:
             resume_id = latest_failed_run(settings.layout)

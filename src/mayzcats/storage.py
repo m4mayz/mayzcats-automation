@@ -8,7 +8,7 @@ from typing import Any
 
 
 @dataclass(frozen=True, slots=True)
-class DriveLayout:
+class RuntimeLayout:
     root: Path
     config_dir: Path
     secrets_dir: Path
@@ -27,7 +27,7 @@ class DriveLayout:
     runs_log: Path
 
     @classmethod
-    def bootstrap(cls, root: Path, defaults_dir: Path) -> DriveLayout:
+    def bootstrap(cls, root: Path, defaults_dir: Path) -> RuntimeLayout:
         root = Path(root)
         config_dir = root / "config"
         secrets_dir = root / "secrets"

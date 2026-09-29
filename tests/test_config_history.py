@@ -4,9 +4,10 @@ import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+from mayzcats.config import Settings
 from mayzcats.history import HistoryStore
 from mayzcats.models import HistoryEntry
-from mayzcats.storage import DriveLayout
+from mayzcats.storage import RuntimeLayout
 
 
 def test_bootstrap_preserves_existing_configuration(tmp_path: Path) -> None:
@@ -15,11 +16,11 @@ def test_bootstrap_preserves_existing_configuration(tmp_path: Path) -> None:
     (defaults / "channel.example.yaml").write_text("channel: default\n", encoding="utf-8")
     (defaults / "pipeline.example.yaml").write_text("pipeline: default\n", encoding="utf-8")
     (defaults / ".env.example").write_text("OPENAI_API_KEY=\n", encoding="utf-8")
-    root = tmp_path / "drive"
+    root = tmp_path / "runtime"
     (root / "config").mkdir(parents=True)
     (root / "config" / "channel.yaml").write_text("channel: mine\n", encoding="utf-8")
 
-    layout = DriveLayout.bootstrap(root, defaults)
+    layout = RuntimeLayout.bootstrap(root, defaults)
 
     assert layout.channel_config.read_text(encoding="utf-8") == "channel: mine\n"
     assert layout.pipeline_config.read_text(encoding="utf-8") == "pipeline: default\n"
@@ -35,9 +36,19 @@ def test_bootstrap_accepts_project_root_env_example(tmp_path: Path) -> None:
     (defaults / "pipeline.example.yaml").write_text("pipeline: {}\n", encoding="utf-8")
     (project_root / ".env.example").write_text("TAVILY_API_KEY=\n", encoding="utf-8")
 
-    layout = DriveLayout.bootstrap(tmp_path / "drive", defaults)
+    layout = RuntimeLayout.bootstrap(tmp_path / "runtime", defaults)
 
     assert layout.env_file.read_text(encoding="utf-8") == "TAVILY_API_KEY=\n"
+
+
+def test_settings_default_paths_follow_runtime_and_repository(tmp_path: Path) -> None:
+    project_root = Path(__file__).resolve().parents[1]
+    layout = RuntimeLayout.bootstrap(tmp_path / "runtime", project_root / "config")
+
+    settings = Settings.load(layout)
+
+    assert settings.work_root == layout.root / "work"
+    assert settings.mpt_root == project_root / "vendor" / "MoneyPrinterTurbo"
 
 
 def test_history_filters_90_days_and_commits_success_atomically(tmp_path: Path) -> None:

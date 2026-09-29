@@ -1,5 +1,8 @@
 llm:
-    provider: openai # Set gemini to use the Interactions API with GEMINI_API_KEY.
+    # openai: any OpenAI-compatible gateway, via OPENAI_BASE_URL and OPENAI_API_KEY.
+    # gemini: the Interactions API, via GEMINI_API_KEY. api_revision applies to gemini only.
+    # Both API key secrets accept a comma-separated list and rotate on quota or auth rejection.
+    provider: openai
     model: openai/gpt-oss-120b
     api_revision: "2026-05-20"
 
@@ -31,7 +34,7 @@ tts:
     voice_name: Jessica
     voice_id: cgSgspJ2msm6clMCkdW9
     model: eleven_multilingual_v2
-    speed: 1.08
+    speed: 1
     output_format: mp3_44100_128
 
 media:
@@ -40,7 +43,7 @@ media:
     max_download_bytes: 150000000
 
 music:
-    volume: 0.08
+    volume: 0.2
     provider: moneyprinterturbo_builtin
     excluded_files: []
 
@@ -48,12 +51,13 @@ video:
     width: 1080
     height: 1920
     fps: 30
+    archive_dir: .runtime/output
     font: Montserrat
     font_bold: true
     watermark: MayzCats
 
 youtube:
-    privacy: private
+    privacy: public
     category_id: "15"
     made_for_kids: false
     chunk_size_bytes: 8388608

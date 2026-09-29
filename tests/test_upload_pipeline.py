@@ -22,7 +22,7 @@ from mayzcats.models import (
     WordTiming,
 )
 from mayzcats.pipeline import MayzCatsPipeline, RunFinalizer, parse_args, retry_failed_upload
-from mayzcats.storage import DriveLayout
+from mayzcats.storage import RuntimeLayout
 from mayzcats.youtube_upload import build_video_body
 
 
@@ -50,8 +50,17 @@ def test_youtube_body_supports_configured_private_or_public_privacy() -> None:
         build_video_body(_payload("friends-only"))
 
 
+def test_youtube_body_schedules_public_payload_as_private_until_publish_time() -> None:
+    body = build_video_body(_payload("public"), "2026-09-25T16:00:00Z")
+    assert body["status"] == {
+        "privacyStatus": "private",
+        "selfDeclaredMadeForKids": False,
+        "publishAt": "2026-09-25T16:00:00Z",
+    }
+
+
 def test_success_commits_history_then_removes_local_run(tmp_path: Path) -> None:
-    layout = DriveLayout.bootstrap(tmp_path / "drive", _defaults(tmp_path))
+    layout = RuntimeLayout.bootstrap(tmp_path / "runtime", _defaults(tmp_path))
     run_dir = tmp_path / "run"
     run_dir.mkdir()
     (run_dir / "final.mp4").write_bytes(b"video")
@@ -100,7 +109,7 @@ def test_success_marks_topic_used_before_writing_secondary_run_log(tmp_path: Pat
 
 
 def test_upload_failure_writes_complete_reusable_package_without_history(tmp_path: Path) -> None:
-    layout = DriveLayout.bootstrap(tmp_path / "drive", _defaults(tmp_path))
+    layout = RuntimeLayout.bootstrap(tmp_path / "runtime", _defaults(tmp_path))
     run_dir = tmp_path / "run"
     run_dir.mkdir()
     final = run_dir / "final.mp4"
@@ -132,8 +141,8 @@ def test_upload_failure_writes_complete_reusable_package_without_history(tmp_pat
     assert json.loads(layout.topic_history.read_text(encoding="utf-8")) == []
 
 
-def test_pipeline_prepares_media_and_mpt_music_before_paid_tts(tmp_path: Path) -> None:
-    layout = DriveLayout.bootstrap(tmp_path / "drive", _defaults(tmp_path))
+def test_pipeline_skips_oversize_media_before_paid_tts(tmp_path: Path) -> None:
+    layout = RuntimeLayout.bootstrap(tmp_path / "runtime", _defaults(tmp_path))
 
     class Settings:
         secrets: dict[str, str] = {}
@@ -145,7 +154,7 @@ def test_pipeline_prepares_media_and_mpt_music_before_paid_tts(tmp_path: Path) -
 
         def value(self, path: str, default=None):
             return {
-                "media.desired_scenes": 1,
+                "media.desired_scenes": 2,
                 "media.minimum_assets": 1,
             }.get(path, default)
 
@@ -164,7 +173,7 @@ def test_pipeline_prepares_media_and_mpt_music_before_paid_tts(tmp_path: Path) -
         hook_text="Cats knead for a reason",
         hook_keyword="knead",
         search_terms=["cat kneading"],
-        beats=["cat kneading"],
+        beats=["cat kneading", "cat paws"],
         mood="warm",
         medical=False,
     )
@@ -205,10 +214,15 @@ def test_pipeline_prepares_media_and_mpt_music_before_paid_tts(tmp_path: Path) -
             return script
 
     class Media:
+        calls = 0
+
         def find(self, terms, *, count, minimum):
-            return [asset]
+            return [asset, asset]
 
         def download(self, selected, directory):
+            self.calls += 1
+            if self.calls == 1:
+                raise RuntimeError("Media download exceeded configured size limit")
             directory.mkdir(parents=True, exist_ok=True)
             selected.local_path = directory / "a.mp4"
             selected.local_path.write_bytes(b"video")
@@ -232,7 +246,8 @@ def test_pipeline_prepares_media_and_mpt_music_before_paid_tts(tmp_path: Path) -
     pipeline.candidate_generator = Candidates()
     pipeline.detector = object()
     pipeline.script_writer = Writer()
-    pipeline.media = Media()
+    media = Media()
+    pipeline.media = media
     pipeline.music = Music()
     pipeline.tts_cache = PaidTTS()
     pipeline.tts = object()
@@ -240,6 +255,7 @@ def test_pipeline_prepares_media_and_mpt_music_before_paid_tts(tmp_path: Path) -
     with pytest.raises(RuntimeError, match="stage 'music'"):
         pipeline.run()
 
+    assert media.calls == 2
     assert pipeline.tts_cache.calls == 0
 
 
@@ -251,7 +267,7 @@ def test_pipeline_prepares_media_and_mpt_music_before_paid_tts(tmp_path: Path) -
 def test_pipeline_resume_reuses_paid_tts_and_optionally_rerenders_video(
     tmp_path: Path, force_rerender: bool, expected_render_calls: int, already_published: bool
 ) -> None:
-    layout = DriveLayout.bootstrap(tmp_path / "drive", _defaults(tmp_path))
+    layout = RuntimeLayout.bootstrap(tmp_path / "runtime", _defaults(tmp_path))
     checkpoint = RunCheckpoint.create(layout, "resume-run")
     candidate = Candidate("Cat paws", "why cats knead", "evergreen")
     brief = ResearchBrief(
@@ -404,15 +420,22 @@ def test_pipeline_resume_reuses_paid_tts_and_optionally_rerenders_video(
 
 
 def test_cli_accepts_rerender_for_a_resumed_run() -> None:
-    args = parse_args(["--resume", "run-123", "--rerender"])
+    args = parse_args(
+        ["--runtime-root", "rt", "--mpt-root", "mpt", "--resume", "run-123", "--rerender"]
+    )
 
     assert args.resume == "run-123"
     assert args.rerender is True
 
 
+def test_cli_requires_runtime_and_mpt_roots() -> None:
+    with pytest.raises(SystemExit):
+        parse_args(["--resume", "run-123"])
+
+
 @pytest.mark.parametrize("same_run", [False, True])
 def test_upload_only_retry_blocks_used_family_or_returns_existing_upload(tmp_path, monkeypatch, same_run):
-    layout = DriveLayout.bootstrap(tmp_path / "drive", _defaults(tmp_path))
+    layout = RuntimeLayout.bootstrap(tmp_path / "runtime", _defaults(tmp_path))
     package = layout.failed_dir / "retry-run"
     package.mkdir()
     (package / "post_payload.json").write_text(json.dumps(_payload().to_dict()))
@@ -433,7 +456,6 @@ def test_upload_only_retry_blocks_used_family_or_returns_existing_upload(tmp_pat
     monkeypatch.setattr("mayzcats.pipeline.YoutubeUploader", NoUpload)
     monkeypatch.setenv("OPENAI_BASE_URL", "https://unused.example/v1")
     monkeypatch.setenv("OPENAI_API_KEY", "test-placeholder")
-    monkeypatch.setenv("OPENAI_MODEL", "test")
     if same_run:
         assert retry_failed_upload(layout.root, "retry-run")["youtube_video_id"] == "published-id"
     else:
@@ -446,6 +468,8 @@ def _defaults(tmp_path: Path) -> Path:
     defaults = tmp_path / "defaults"
     defaults.mkdir(exist_ok=True)
     (defaults / "channel.example.yaml").write_text("channel: {}\n", encoding="utf-8")
-    (defaults / "pipeline.example.yaml").write_text("pipeline: {}\n", encoding="utf-8")
+    (defaults / "pipeline.example.yaml").write_text(
+        "pipeline: {}\nllm:\n  model: test-model\n", encoding="utf-8"
+    )
     (defaults / ".env.example").write_text("OPENAI_API_KEY=\n", encoding="utf-8")
     return defaults
