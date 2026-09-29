@@ -669,5 +669,60 @@
       "run_id": "590f1505-3467-4d62-8df9-a6cdb9964fd0",
       "privacy": "public"
     }
+  },
+  {
+    "subject": "Cat Cognitive Skills: Problem Solving and Learning",
+    "angle": "Scientific experiments that reveal cats can solve puzzles, learn tricks, and adapt to new challenges",
+    "published_at": "2026-09-27T02:10:44.907584+00:00",
+    "youtube_video_id": "wzC08HumSW8",
+    "metadata": {
+      "title": "Cat Puzzle Solvers: How Felines Learn and Adapt",
+      "run_id": "ae03c89d-8826-41a2-81ef-4b73945170ef",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat Claw Mechanics: Structure, Function, and Care",
+    "angle": "Detail the anatomy of retractable claws and best practices for nail health",
+    "published_at": "2026-09-27T12:53:21.901160+00:00",
+    "youtube_video_id": "PFzfY0ZvvU4",
+    "metadata": {
+      "title": "Cat Claw Mechanics & Care",
+      "run_id": "f2703929-ca60-42fc-a021-3a7dd4254fe8",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Choosing the Right Cat Tree: Size, Materials, and Placement",
+    "angle": "Guidelines for selecting a cat tree that matches your cat’s size, activity level, and home décor",
+    "published_at": "2026-09-28T02:16:20.318845+00:00",
+    "youtube_video_id": "Aub7_ar9oIM",
+    "metadata": {
+      "title": "How to Pick the Perfect Cat Tree for Any Feline",
+      "run_id": "b624d40f-67b5-441b-b00f-7ea89989ec19",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Catnip Sensitivity Variations",
+    "angle": "Why do some cats react strongly to catnip while others show no interest?",
+    "published_at": "2026-09-28T15:06:56.801350+00:00",
+    "youtube_video_id": "ivrI91uFzrM",
+    "metadata": {
+      "title": "Why Some Cats Love Catnip and Others Don’t",
+      "run_id": "e25b107d-aab3-43ca-8db6-cdae6e67caf7",
+      "privacy": "public"
+    }
+  },
+  {
+    "subject": "Cat Adoption Process: Steps for New Cat Parents",
+    "angle": "A step‑by‑step guide covering preparation, paperwork, home setup, and first weeks after adoption",
+    "published_at": "2026-09-29T03:03:26.093432+00:00",
+    "youtube_video_id": "rHzGiAok5w4",
+    "metadata": {
+      "title": "Step‑by‑Step Guide to a Smooth Cat Adoption",
+      "run_id": "37f32add-4a64-470a-bc8a-18294ed9ef1c",
+      "privacy": "public"
+    }
   }
 ]
