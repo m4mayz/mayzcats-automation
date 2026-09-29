@@ -32,6 +32,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          # Branch head at job start, not the triggering commit: a queued run must see the
+          # state committed by the run before it, or its own state push conflicts.
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
       - name: Check schedule slot
         id: gate
