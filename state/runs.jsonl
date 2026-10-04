@@ -91,3 +91,5 @@
 {"run_id": "b202db03-fd7a-40d4-ad2c-21f11107beff", "status": "failed"}
 {"run_id": "03f3294b-9e21-4771-8fd5-e313fe4f6188", "status": "failed"}
 {"run_id": "03f3294b-9e21-4771-8fd5-e313fe4f6188", "status": "success", "topic": "Cats in Space: The History of Feline Astronauts", "angle": "Chronicle of cats that have traveled beyond Earth and their contributions to space research", "youtube_video_id": "6bO9XY5D5w8", "uploaded_at": "2026-10-04T04:05:39.864750+00:00", "privacy": "public"}
+{"run_id": "250692b2-b881-47af-9143-46fb74541283", "status": "failed"}
+{"run_id": "a49aba9b-102e-4484-b6b5-7139f04071d9", "status": "success", "topic": "Why Cats Watch Birds: The Instinctual Drive Explained", "angle": "Linking predatory instincts to the fascination with window‑side birdwatching.", "youtube_video_id": "zDg6vrfCQHU", "uploaded_at": "2026-10-04T13:11:59.683293+00:00", "privacy": "public"}
