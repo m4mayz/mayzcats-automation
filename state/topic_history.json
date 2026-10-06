@@ -834,5 +834,16 @@
       "run_id": "84dbdcbc-3038-477e-b489-d642452f26ce",
       "privacy": "public"
     }
+  },
+  {
+    "subject": "Feline earthquake detection",
+    "angle": "Exploring how cats sense seismic activity before humans",
+    "published_at": "2026-10-06T14:10:22.205746+00:00",
+    "youtube_video_id": "WVtL9xMrdyU",
+    "metadata": {
+      "title": "Can Cats Detect Earthquakes Before Humans?",
+      "run_id": "5e3a8ab0-c67d-45ed-bdde-8490d3134755",
+      "privacy": "public"
+    }
   }
 ]
