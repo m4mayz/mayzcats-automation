@@ -889,5 +889,16 @@
       "run_id": "b25885b5-d079-4967-8374-3860e4cc9a29",
       "privacy": "public"
     }
+  },
+  {
+    "subject": "Music and Cats",
+    "angle": "How different musical genres affect feline mood and behavior",
+    "published_at": "2026-10-09T14:23:04.373196+00:00",
+    "youtube_video_id": "yj0iKLYZxRE",
+    "metadata": {
+      "title": "How Music Shapes Cat Mood",
+      "run_id": "b6bdbd4d-ba8e-4467-82a4-5a6c37dcb12c",
+      "privacy": "public"
+    }
   }
 ]
